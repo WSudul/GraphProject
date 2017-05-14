@@ -278,32 +278,28 @@ namespace graph {
 
 	const graph::Graph::Edge* Graph::Vertex::findOutEdge(const Vertex * to) const
 	{
-		 auto &it = std::find_if(outEdges.begin(), outEdges.end(), [&to](const std::unique_ptr<Edge>& E)->bool {return E->getDestination() == to; });
+		auto &it = std::find_if(outEdges.begin(), outEdges.end(), [&to](const std::unique_ptr<Edge>& E)->bool {return E->getDestination() == to; });
 		
 		if (it != outEdges.end())
 		{
 			return it->get();
 		}
-		else
-		{
-			return nullptr;
-		}
+
+		return nullptr;
 	}
 
 	const graph::Graph::Edge * Graph::Vertex::findInEdge(const Vertex * from) const
 	{
 		
-		const auto &it = std::find_if(inEdges.begin(), inEdges.end(), [&from](const std::unique_ptr<Edge>& E)->bool {return E->getDestination() == from; });
+		const auto &it = std::find_if(inEdges.begin(), inEdges.end(), [&from](const Edge* E)->bool {return E->getDestination() == from; });
 
 
 		if (it != inEdges.end())
 		{
 			return *it;
 		}
-		else
-		{
-			return nullptr;
-		}
+		
+		return nullptr;
 	}
 
 	
@@ -345,7 +341,7 @@ namespace graph {
 	{
 
 		inEdges.erase(std::remove(inEdges.begin(), inEdges.end(), edge));
-		//[&edge]( Edge*  E) ->bool {return E== (edge); }
+		
 	}
 
 	inline void Graph::Vertex::removeOutEdge(const Vertex * to, const Edge * edge)

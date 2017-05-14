@@ -18,11 +18,14 @@ int main()
 	G1.addVertex();
 	G1.addEdge(1, 2, 10);
 	G1.addVertex();
-
+	G1.addEdge(1, 3, 22);
 	std::vector<std::string> vec=G1.verticesToString();
 
 	for (const auto &it : vec)
 		std::cout << it << std::endl;
+
+	G1.removeEdge(1, 2);
+
 
     return 0;
 }
