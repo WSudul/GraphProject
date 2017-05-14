@@ -8,4 +8,5 @@ Attempt to implement a Graph class that would  represent a graph structure via a
 Goals:
 
 1. Creating base structure for weighted graph using Edges and Vertices
-2. Creating digraphs (directed graphs) with  
+2. Creating digraphs (directed graphs) with  weights
+3. creating multigraphs
