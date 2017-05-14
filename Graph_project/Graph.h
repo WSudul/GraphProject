@@ -62,7 +62,7 @@ namespace graph {
 		//std::map<std::size_t, Vertex> Vertices; //map of all vertices,key is unique ID assigned to each vertex
 		
 		std::map<std::size_t, std::unique_ptr<Vertex>> Vertices;
-		std::vector<std::unique_ptr<Edge>> Edges;
+		//std::vector<std::unique_ptr<Edge>> Edges;
 
 		std::string Graph::vertexToString(const std::pair <const std::size_t , std::unique_ptr<Vertex>>& it);
 
@@ -81,17 +81,18 @@ namespace graph {
 		//std::list<T>::iterator edges();
 		std::size_t countEdges();
 
-
+		const graph::Graph::Edge*  findOutEdge(const Vertex*  to) const;
+		const graph::Graph::Edge*  findInEdge(const Vertex*  from) const;
 
 		void addInEdge(Edge* edge);
 		void addOutEdge(Edge* edge);
 
 
-		void removeInEdge(std::size_t to, Edge* edge);
-		void removeOutEdge(std::size_t from, Edge* edge);
+		void removeInEdge(const std::size_t to, const Edge* edge);
+		void removeOutEdge(const std::size_t from, const Edge* edge);
 
-		void removeInEdge(Vertex* to, Edge* edge);
-		void removeOutEdge(Vertex* from, Edge* edge);
+		void removeInEdge(const Vertex* to, const Edge* edge);
+		void removeOutEdge(const Vertex* from, const Edge* edge);
 
 	private:
 
@@ -100,8 +101,8 @@ namespace graph {
 
 
 		std::vector<Edge*> inEdges; //list of all edges that are pointing to this node
-		std::vector<Edge*> outEdges; //list of all edges that are pointing from this node
-
+		//std::vector<Edge*> outEdges; //list of all edges that are pointing from this node
+		std::vector<std::unique_ptr<Edge>> outEdges;
 	};
 
 

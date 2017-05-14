@@ -115,12 +115,15 @@ namespace graph {
 
 
 		//create new edge and move it to container
-		std::unique_ptr<Edge> edge(new Edge(fromPtr, toPtr, cost));
+		//std::unique_ptr<Edge> edge(new Edge(fromPtr, toPtr, cost));
 
-		fromPtr->addOutEdge(edge.get());
-		toPtr->addInEdge(edge.get());
 
-		Edges.push_back(std::move(edge));
+		//#TODO REWORK THIS, try avoiding explicit new (at least without unique_ptr )
+		Edge * edge = new Edge(fromPtr, toPtr, cost);
+		//fromPtr->addOutEdge(edge.get());
+		toPtr->addInEdge(edge);
+
+		fromPtr->addOutEdge(edge);
 
 
 
@@ -135,17 +138,28 @@ namespace graph {
 
 	void Graph::removeEdge(std::size_t from, std::size_t to)
 	{
+		//#TODO refractor this
+
+		//finds from,to vertices
 		auto &it_from = Vertices.find(from);
 		auto &it_to = Vertices.find(to);
 		auto &it_end = Vertices.end();
 
-		auto &it_edge = std::find_if(Edges.begin(), Edges.end(), [&it_from, &it_to](const std::unique_ptr<Edge> &e)->bool {return (it_from->second.get() == e->getSource() && it_to->second.get() == e->getDestination()); });
+		//auto &it_edge = std::find_if(Edges.begin(), Edges.end(), [&it_from, &it_to](const std::unique_ptr<Edge> &e)->bool {return (it_from->second.get() == e->getSource() && it_to->second.get() == e->getDestination()); });
 
+
+		
 		//check if both ends are existing
 		if (it_from != it_end && it_to != it_end)
 		{
-			it_from->second->removeOutEdge(it_to->second.get(), it_edge->get());
-			it_to->second->removeInEdge(it_from->second.get(), it_edge->get());
+			//finds matching edge (O(deg(V)))
+			const Edge*  edgePtr = nullptr;
+			Vertex*  vertexFromPtr = it_from->second.get();
+			Vertex*  vertexToPtr = it_to->second.get();
+			edgePtr = vertexFromPtr->findOutEdge(vertexToPtr);
+
+			it_to->second->removeInEdge(it_from->second.get(), edgePtr); //remove pointer to edge from receiving vertex
+			it_from->second->removeOutEdge(it_to->second.get(), edgePtr); //remove the edge itself
 		}
 
 
@@ -262,6 +276,37 @@ namespace graph {
 		return outEdges.size() + inEdges.size();
 	}
 
+	const graph::Graph::Edge* Graph::Vertex::findOutEdge(const Vertex * to) const
+	{
+		 auto &it = std::find_if(outEdges.begin(), outEdges.end(), [&to](const std::unique_ptr<Edge>& E)->bool {return E->getDestination() == to; });
+		
+		if (it != outEdges.end())
+		{
+			return it->get();
+		}
+		else
+		{
+			return nullptr;
+		}
+	}
+
+	const graph::Graph::Edge * Graph::Vertex::findInEdge(const Vertex * from) const
+	{
+		
+		const auto &it = std::find_if(inEdges.begin(), inEdges.end(), [&from](const std::unique_ptr<Edge>& E)->bool {return E->getDestination() == from; });
+
+
+		if (it != inEdges.end())
+		{
+			return *it;
+		}
+		else
+		{
+			return nullptr;
+		}
+	}
+
+	
 
 	//#TODO add edge needs only a pointer to edge
 
@@ -275,10 +320,16 @@ namespace graph {
 	inline void graph::Graph::Vertex::addOutEdge(Edge * edge)
 	{
 		if (edge->getSource() == this)
-			this->outEdges.push_back(edge);
+		{
+			std::unique_ptr<Edge> e;
+			e.reset(edge);
+			this->outEdges.push_back(std::move(e));
+		}
+	
+			
 	}
 
-	inline void Graph::Vertex::removeInEdge(std::size_t from, Edge * edge)
+	inline void Graph::Vertex::removeInEdge(const std::size_t from, const Edge * edge)
 	{
 		//std::find_if(Vertices.begin(), Vertices.end(), [&from](const std::unique_ptr<Vertex> & v)->bool {return v->getID()==from;});
 		//Vertices.find();
@@ -286,20 +337,23 @@ namespace graph {
 
 	}
 
-	inline void Graph::Vertex::removeOutEdge(std::size_t to, Edge * edge)
+	inline void Graph::Vertex::removeOutEdge(const std::size_t to, const  Edge * edge)
 	{
 	}
 
-	inline void Graph::Vertex::removeInEdge(Vertex * from, Edge * edge)
+	inline void Graph::Vertex::removeInEdge(const Vertex * from, const  Edge * edge)
 	{
 
 		inEdges.erase(std::remove(inEdges.begin(), inEdges.end(), edge));
 		//[&edge]( Edge*  E) ->bool {return E== (edge); }
 	}
 
-	inline void Graph::Vertex::removeOutEdge(Vertex * to, Edge * edge)
+	inline void Graph::Vertex::removeOutEdge(const Vertex * to, const Edge * edge)
 	{
-		outEdges.erase(std::remove(outEdges.begin(), outEdges.end(), edge));
+		auto &it = std::find_if(outEdges.begin(), outEdges.end(), [&edge](const std::unique_ptr<Edge>&e)->bool {return edge == e.get(); });
+		if (it != outEdges.end())
+			outEdges.erase(it);
+		//outEdges.erase(std::remove_if(outEdges.begin(), outEdges.end(), [&edge](const std::unique_ptr<Edge>&e)->bool {return edge == e.get(); }));
 	}
 
 }
