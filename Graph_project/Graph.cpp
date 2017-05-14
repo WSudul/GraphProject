@@ -1,0 +1,305 @@
+#include "stdafx.h"
+#include "Graph.h"
+
+namespace graph {
+
+	Graph::Edge::Edge()
+	{
+	}
+
+
+	Graph::Edge::Edge(Vertex* source, Vertex* destination, int cost) :
+		source(source), destination(destination), cost(cost), directed(false)
+	{
+
+	}
+
+	Graph::Edge::~Edge()
+	{
+
+	}
+
+
+	int Graph::Edge::getCost()
+	{
+		return this->cost;
+	}
+
+	void Graph::Edge::setCost(int cost)
+	{
+		this->cost = cost;
+	}
+
+
+	inline std::size_t Graph::Edge::getID()
+	{
+		return this->id;
+	}
+
+	inline Graph::Vertex * Graph::Edge::getSource() const
+	{
+		return source;
+	}
+
+	inline Graph::Vertex * Graph::Edge::getDestination() const
+	{
+		return destination;
+	}
+
+
+
+
+	Graph::Graph()
+	{
+	}
+
+
+	Graph::~Graph()
+	{
+	}
+
+
+	std::size_t Graph::addVertex()
+	{
+		using pairtype = std::pair<const std::size_t, std::unique_ptr<Vertex>>;
+		std::size_t id;
+		auto &it_id = std::max_element(Vertices.begin(), Vertices.end(), [](const pairtype &V1, const pairtype &V2) ->bool {return V1.first < V2.first; });
+		
+		if (it_id != Vertices.end())
+			id = it_id->first;
+		else
+			id = 0;
+
+		id++;
+		auto it = Vertices.insert(std::make_pair(id,std::make_unique<Vertex>(id)));
+		if (it.second)
+		{
+			//object was inserted
+			//it->second = ; //allocate memory for Vertex return
+		}
+
+		return id; //return unique id ,that will identify this object in future
+	}
+
+
+	void Graph::addEdge(std::size_t from, std::size_t to, int cost)
+	{
+		auto &it_from = Vertices.find(from);
+		auto &it_to = Vertices.find(to);
+		if (it_from == Vertices.end())
+		{
+			//Node does not exist
+			return;
+		}
+
+		if (it_to == Vertices.end())
+		{
+			//Node does not exist
+			return;
+		}
+		Vertex* fromPtr=nullptr;
+		Vertex* toPtr=nullptr;
+		
+		fromPtr = it_from->second.get();
+		toPtr = it_to->second.get();
+
+		if (fromPtr == nullptr)
+		{
+
+		};
+		if (toPtr == nullptr)
+		{
+
+		};
+		
+
+
+		//create new edge and move it to container
+		std::unique_ptr<Edge> edge(new Edge(fromPtr, toPtr, cost));
+
+		fromPtr->addOutEdge(edge.get());
+		toPtr->addInEdge(edge.get());
+
+		Edges.push_back(std::move(edge));
+
+
+
+
+
+
+	}
+
+	void Graph::removeEdges(std::size_t from, std::size_t to)
+	{
+	}
+
+	void Graph::removeEdge(std::size_t from, std::size_t to)
+	{
+		auto &it_from = Vertices.find(from);
+		auto &it_to = Vertices.find(to);
+		auto &it_end = Vertices.end();
+
+		auto &it_edge = std::find_if(Edges.begin(), Edges.end(), [&it_from, &it_to](const std::unique_ptr<Edge> &e)->bool {return (it_from->second.get() == e->getSource() && it_to->second.get() == e->getDestination()); });
+
+		//check if both ends are existing
+		if (it_from != it_end && it_to != it_end)
+		{
+			it_from->second->removeOutEdge(it_to->second.get(), it_edge->get());
+			it_to->second->removeInEdge(it_from->second.get(), it_edge->get());
+		}
+
+
+	}
+
+	inline void Graph::removeNode(std::size_t node)
+	{
+	}
+
+
+	inline std::size_t Graph::edgeCount()
+	{
+		std::size_t count = 0;
+
+		/*for (auto  &ent1 : Vertices)
+		{
+		auto  &key = ent1.first;
+		auto  &val = ent1.second;
+		count += val.countEdges();
+		}
+		return count;*/
+
+
+		for (auto &it : Vertices)
+		{
+
+			count += it.second->countEdges();
+
+		}
+		return count;
+
+	}
+
+	inline std::string Graph::vertexToString(const std::pair<const std::size_t,std::unique_ptr<Vertex>>& it)
+	{
+	
+		const auto &item = it.second;
+		std::string str;
+		str += "Name:";
+		str += std::to_string(item->getID());
+		str += "\tEdges total:";
+		str += std::to_string(item->countEdges());
+
+		return str;
+	}
+
+	inline std::string Graph::vertexToString(const std::size_t &name )
+	{
+		std::string str;
+		const auto &it= Vertices.find(name);
+		if (it != Vertices.end())
+		{
+			str = vertexToString(*it);
+		}
+		return str;
+	}
+
+	std::string Graph::edgeToString()
+	{
+		return std::string();
+	}
+
+	std::vector<std::string> Graph::verticesToString()
+	{
+		std::vector<std::string> out;
+		out.reserve(24u * Vertices.size());
+		for (const auto &it : Vertices)
+		{
+			out.push_back(vertexToString(it));
+		}
+		return out;
+	}
+
+	std::vector<std::string> Graph::edgesToString()
+	{
+		return std::vector<std::string>();
+	}
+
+
+	inline std::size_t Graph::vertexCount()
+	{
+		return Vertices.size();
+
+	}
+
+
+	Graph::Vertex::Vertex(std::size_t id) :
+		uniq_id(id)
+	{
+
+	}
+
+
+
+	Graph::Vertex::~Vertex()
+	{
+	}
+
+
+	inline std::size_t Graph::Vertex::getID()
+	{
+		return uniq_id;
+	}
+
+	//template<typename T>
+	//std::list<T>::iterator Vertex<T>::edges()
+	//{
+	//	return edgeList.begin();
+	//}
+
+
+	std::size_t Graph::Vertex::countEdges()
+	{
+		return outEdges.size() + inEdges.size();
+	}
+
+
+	//#TODO add edge needs only a pointer to edge
+
+
+	inline void Graph::Vertex::addInEdge(Edge * edge)
+	{
+		if (edge->getDestination() == this)
+			this->inEdges.push_back(edge);
+	}
+
+	inline void graph::Graph::Vertex::addOutEdge(Edge * edge)
+	{
+		if (edge->getSource() == this)
+			this->outEdges.push_back(edge);
+	}
+
+	inline void Graph::Vertex::removeInEdge(std::size_t from, Edge * edge)
+	{
+		//std::find_if(Vertices.begin(), Vertices.end(), [&from](const std::unique_ptr<Vertex> & v)->bool {return v->getID()==from;});
+		//Vertices.find();
+
+
+	}
+
+	inline void Graph::Vertex::removeOutEdge(std::size_t to, Edge * edge)
+	{
+	}
+
+	inline void Graph::Vertex::removeInEdge(Vertex * from, Edge * edge)
+	{
+
+		inEdges.erase(std::remove(inEdges.begin(), inEdges.end(), edge));
+		//[&edge]( Edge*  E) ->bool {return E== (edge); }
+	}
+
+	inline void Graph::Vertex::removeOutEdge(Vertex * to, Edge * edge)
+	{
+		outEdges.erase(std::remove(outEdges.begin(), outEdges.end(), edge));
+	}
+
+}
