@@ -1,6 +1,8 @@
 // Graph_project.cpp : Defines the entry point for the console application.
 //
 
+
+
 #include "stdafx.h"
 #include "Graph.h"
 #include <iostream>
@@ -9,36 +11,65 @@
 #include <chrono>
 #include <fstream>
 
+
+
 int main()
 {
-	const int size = 1000;
+	
+	
+	 
 	std::ofstream file;
 	file.open("maptest.txt");
-	for (int n = 1; n < 1000; n+=10)
+
+	for (int x = 1; x < 3; x++)
+	for (int n = 1; n < 20;n+=4)
 	{
+		int v = 10;
+	int e = 10;
 	graph::Graph G1;
-	
-	G1.addVertex();
-	G1.addVertex();
-	G1.addVertex();
+	v *= n;
+	e *= x;
+	{
+		//force wait
+		std::chrono::high_resolution_clock::time_point t1 = std::chrono::high_resolution_clock::now();
+		std::chrono::duration<double> time_span;
+		do {
+
+
+
+			std::chrono::high_resolution_clock::time_point t2 = std::chrono::high_resolution_clock::now();
+			time_span = std::chrono::duration_cast<std::chrono::duration<double>>(t2 - t1);
+		} while (time_span.count() < 0.60);
+
+	}
+
+
+
+	//G1.addVertex();
+	//G1.addVertex();
+	//G1.addVertex();
 	
 		std::chrono::high_resolution_clock::time_point t1 = std::chrono::high_resolution_clock::now();
-		for (int i = 0; i < size * n; i++)
+		for (int i = 0; i < v; i++)
 		{
 			G1.addVertex(i);
 		}
 
-		for (int i = 0; i < size * n*4; i++)
+		for (int i = 0; i < e*v; i++)
 		{
-			G1.addEdge(i, i%size,10);
+			G1.addEdge(i%v, (i+1)%v,10);
 		}
 
 	
-	std::chrono::high_resolution_clock::time_point t2 = std::chrono::high_resolution_clock::now();
-	std::chrono::duration<double> time_span = std::chrono::duration_cast<std::chrono::duration<double>>(t2-t1);
+		std::chrono::high_resolution_clock::time_point t2 = std::chrono::high_resolution_clock::now();
+		std::chrono::duration<double> time_span = std::chrono::duration_cast<std::chrono::duration<double>>(t2-t1);
 	
-	std::cout <<"size="<< size*n <<"time=" << time_span.count() << std::endl;
-	file << size * n << "\t" << time_span.count() << "\n";
+		std::cout <<"vertices total="<< v <<"edges per vertice="<<e<<"time=" << time_span.count() << std::endl;
+		file << v << "\t" <<e<<"\t"<< time_span.count() << "\n";
+
+
+
+
 	}
 	//G1.addEdge(1, 2, 10);
 	//G1.addVertex();
@@ -54,6 +85,21 @@ int main()
 
 	////for (const auto &it : vec)
 	//	//std::cout << it << std::endl;
+
+	{
+		std::chrono::high_resolution_clock::time_point t1 = std::chrono::high_resolution_clock::now();
+		std::chrono::duration<double> time_span;
+		do {
+
+
+
+			std::chrono::high_resolution_clock::time_point t2 = std::chrono::high_resolution_clock::now();
+			time_span = std::chrono::duration_cast<std::chrono::duration<double>>(t2 - t1);
+		} while (time_span.count() < 1.00);
+
+	}
+	_CrtDumpMemoryLeaks();
+
 
     return 0;
 }

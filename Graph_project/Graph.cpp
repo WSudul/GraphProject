@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include "Graph.h"
-
+#include <iostream>
 namespace graph {
 
 	Graph::Edge::Edge()
@@ -16,7 +16,7 @@ namespace graph {
 
 	Graph::Edge::~Edge()
 	{
-
+		//std::cout << "Edge dtor!" << std::endl;
 	}
 
 
@@ -51,11 +51,13 @@ namespace graph {
 
 	Graph::Graph()
 	{
+		std::cout << "Graph ctor!" << std::endl;
 	}
 
 
 	Graph::~Graph()
 	{
+		std::cout << "Graph dtor!" << std::endl;
 	}
 
 
@@ -88,6 +90,10 @@ namespace graph {
 		{
 			//object was inserted
 			//it->second = ; //allocate memory for Vertex return
+		}
+		else
+		{
+			//object already exists!
 		}
 
 		 //return unique id ,that will identify this object in future
@@ -265,9 +271,10 @@ namespace graph {
 	}
 
 
-
 	Graph::Vertex::~Vertex()
 	{
+		//std::cout << "Vertex dtor!" << std::endl;
+
 	}
 
 
@@ -348,6 +355,7 @@ namespace graph {
 	inline void Graph::Vertex::removeOutEdge(const std::size_t to, const  Edge * edge)
 	{
 	}
+
 
 	inline void Graph::Vertex::removeInEdge(const Vertex * from, const  Edge * edge)
 	{
