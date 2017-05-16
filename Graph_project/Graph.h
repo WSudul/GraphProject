@@ -3,6 +3,7 @@
 #include <list>
 #include <vector>
 #include <map>
+#include <unordered_map>
 #include <iterator>
 #include <memory>
 #include <string>
@@ -36,8 +37,9 @@ namespace graph {
 
 
 		std::size_t addVertex();
+		void addVertex(std::size_t id);
 		void addEdge(std::size_t from, std::size_t to, int cost);
-
+	
 		void removeEdges(std::size_t from, std::size_t to);
 
 		void removeEdge(std::size_t from, std::size_t to);
@@ -59,10 +61,9 @@ namespace graph {
 
 		class Edge;
 
-		//std::map<std::size_t, Vertex> Vertices; //map of all vertices,key is unique ID assigned to each vertex
+		//map of all vertices,key is unique ID assigned to each vertex
+		std::unordered_map<std::size_t, std::unique_ptr<Vertex>> Vertices;
 		
-		std::map<std::size_t, std::unique_ptr<Vertex>> Vertices;
-		//std::vector<std::unique_ptr<Edge>> Edges;
 
 		std::string Graph::vertexToString(const std::pair <const std::size_t , std::unique_ptr<Vertex>>& it);
 

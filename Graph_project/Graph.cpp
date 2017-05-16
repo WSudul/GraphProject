@@ -81,6 +81,18 @@ namespace graph {
 		return id; //return unique id ,that will identify this object in future
 	}
 
+	void Graph::addVertex(std::size_t id)
+	{
+		auto it = Vertices.insert(std::make_pair(id, std::make_unique<Vertex>(id)));
+		if (it.second)
+		{
+			//object was inserted
+			//it->second = ; //allocate memory for Vertex return
+		}
+
+		 //return unique id ,that will identify this object in future
+	}
+
 
 	void Graph::addEdge(std::size_t from, std::size_t to, int cost)
 	{
@@ -105,11 +117,11 @@ namespace graph {
 
 		if (fromPtr == nullptr)
 		{
-
+			return;
 		};
 		if (toPtr == nullptr)
 		{
-
+			return;
 		};
 		
 
