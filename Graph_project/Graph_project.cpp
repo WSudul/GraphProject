@@ -21,8 +21,8 @@ int main()
 	std::ofstream file;
 	file.open("maptest.txt");
 
-	for (int x = 1; x < 3; x++)
-	for (int n = 1; n < 20;n+=4)
+	for (int x = 1; x < 2; x++)
+	for (int n = 1; n < 5;n+=4)
 	{
 		int v = 10;
 	int e = 10;
@@ -58,6 +58,11 @@ int main()
 		for (int i = 0; i < e*v; i++)
 		{
 			G1.addEdge(i%v, (i+1)%v,10);
+		}
+
+		for (int i = 0; i < e*v; i++)
+		{
+			G1.removeDirEdge(i%v, (i + 1) % v);
 		}
 
 	

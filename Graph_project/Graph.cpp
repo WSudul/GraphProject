@@ -16,7 +16,7 @@ namespace graph {
 
 	Graph::Edge::~Edge()
 	{
-		//std::cout << "Edge dtor!" << std::endl;
+		std::cout << "Edge dtor!" << std::endl;
 	}
 
 
@@ -100,7 +100,7 @@ namespace graph {
 	}
 
 
-	void Graph::addEdge(std::size_t from, std::size_t to, int cost)
+	void Graph::addEdge(std::size_t from, std::size_t to, int cost, bool directed)
 	{
 		auto &it_from = Vertices.find(from);
 		auto &it_to = Vertices.find(to);
@@ -140,8 +140,14 @@ namespace graph {
 		Edge * edge = new Edge(fromPtr, toPtr, cost);
 		//fromPtr->addOutEdge(edge.get());
 		toPtr->addInEdge(edge);
-
 		fromPtr->addOutEdge(edge);
+		if (!directed)
+		{
+			//add 2nd edge to represent 2 way edge
+			edge = new Edge(fromPtr, toPtr, cost);
+			fromPtr->addInEdge(edge);
+			toPtr->addOutEdge(edge);
+		}
 
 
 
@@ -154,34 +160,7 @@ namespace graph {
 	{
 	}
 
-	void Graph::removeEdge(std::size_t from, std::size_t to)
-	{
-		//#TODO refractor this
-
-		//finds from,to vertices
-		auto &it_from = Vertices.find(from);
-		auto &it_to = Vertices.find(to);
-		auto &it_end = Vertices.end();
-
-		//auto &it_edge = std::find_if(Edges.begin(), Edges.end(), [&it_from, &it_to](const std::unique_ptr<Edge> &e)->bool {return (it_from->second.get() == e->getSource() && it_to->second.get() == e->getDestination()); });
-
-
-		
-		//check if both ends are existing
-		if (it_from != it_end && it_to != it_end)
-		{
-			//finds matching edge (O(deg(V)))
-			const Edge*  edgePtr = nullptr;
-			Vertex*  vertexFromPtr = it_from->second.get();
-			Vertex*  vertexToPtr = it_to->second.get();
-			edgePtr = vertexFromPtr->findOutEdge(vertexToPtr);
-
-			it_to->second->removeInEdge(it_from->second.get(), edgePtr); //remove pointer to edge from receiving vertex
-			it_from->second->removeOutEdge(it_to->second.get(), edgePtr); //remove the edge itself
-		}
-
-
-	}
+	
 
 	inline void Graph::removeNode(std::size_t node)
 	{
@@ -273,7 +252,7 @@ namespace graph {
 
 	Graph::Vertex::~Vertex()
 	{
-		//std::cout << "Vertex dtor!" << std::endl;
+		std::cout << "Vertex dtor!" << std::endl;
 
 	}
 
@@ -283,43 +262,15 @@ namespace graph {
 		return uniq_id;
 	}
 
-	//template<typename T>
-	//std::list<T>::iterator Vertex<T>::edges()
-	//{
-	//	return edgeList.begin();
-	//}
 
 
 	std::size_t Graph::Vertex::countEdges()
 	{
-		return outEdges.size() + inEdges.size();
+		return outEdges.size();
 	}
 
-	const graph::Graph::Edge* Graph::Vertex::findOutEdge(const Vertex * to) const
-	{
-		auto &it = std::find_if(outEdges.begin(), outEdges.end(), [&to](const std::unique_ptr<Edge>& E)->bool {return E->getDestination() == to; });
-		
-		if (it != outEdges.end())
-		{
-			return it->get();
-		}
 
-		return nullptr;
-	}
-
-	const graph::Graph::Edge * Graph::Vertex::findInEdge(const Vertex * from) const
-	{
-		
-		const auto &it = std::find_if(inEdges.begin(), inEdges.end(), [&from](const Edge* E)->bool {return E->getDestination() == from; });
-
-
-		if (it != inEdges.end())
-		{
-			return *it;
-		}
-		
-		return nullptr;
-	}
+	
 
 	
 
