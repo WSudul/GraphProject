@@ -162,7 +162,36 @@ namespace graph {
 
 	
 
-	inline void Graph::removeNode(std::size_t node)
+	void Graph::removeDirEdge(std::size_t from, std::size_t to)
+	{
+		//#TODO refractor this
+
+		//finds from,to vertices
+		auto &it_from = Vertices.find(from);
+		auto &it_to = Vertices.find(to);
+		auto &it_end = Vertices.end();
+
+		//auto &it_edge = std::find_if(Edges.begin(), Edges.end(), [&it_from, &it_to](const std::unique_ptr<Edge> &e)->bool {return (it_from->second.get() == e->getSource() && it_to->second.get() == e->getDestination()); });
+
+
+
+		//check if both ends are existing
+		if (it_from != it_end && it_to != it_end)
+		{
+			//finds matching edge (O(deg(V)))
+			const Edge*  edgePtr = nullptr;
+			Vertex*  vertexFromPtr = it_from->second.get();
+			Vertex*  vertexToPtr = it_to->second.get();
+			edgePtr = vertexFromPtr->findOutEdge(vertexToPtr);
+
+			it_to->second->removeInEdge(it_from->second.get(), edgePtr); //remove pointer to edge from receiving vertex
+			it_from->second->removeOutEdge(it_to->second.get(), edgePtr); //remove the edge itself
+		}
+
+
+	}
+
+	inline void Graph::removeVertex(std::size_t node)
 	{
 	}
 
@@ -270,12 +299,46 @@ namespace graph {
 	}
 
 
+	inline const graph::Graph::Edge * Graph::Vertex::findOutEdge(const Vertex * to) const
+	{
+		auto &it = std::find_if(outEdges.begin(), outEdges.end(), [&to](const std::unique_ptr<Edge>& E)->bool {return E->getDestination() == to; });
+
+		if (it != outEdges.end())
+		{
+			return it->get();
+		}
+
+		return nullptr;
+	}
+
+
 	
 
 	
 
 	//#TODO add edge needs only a pointer to edge
 
+
+
+	/*!
+	returns a pointer to first Edge that arrives from vertex based on specified predicament
+	*/
+
+	inline const graph::Graph::Edge * Graph::Vertex::findInEdge(const Vertex * from) const
+	{
+
+		const auto &it = std::find_if(inEdges.begin(), inEdges.end(), [&from](const Edge* E)->bool {return E->getDestination() == from; });
+
+
+		if (it != inEdges.end())
+		{
+			return *it;
+		}
+
+		return nullptr;
+	}
+
+	
 
 	inline void Graph::Vertex::addInEdge(Edge * edge)
 	{

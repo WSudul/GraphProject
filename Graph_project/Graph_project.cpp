@@ -24,11 +24,11 @@ int main()
 	for (int x = 1; x < 2; x++)
 	for (int n = 1; n < 5;n+=4)
 	{
-		int v = 10;
-	int e = 10;
-	graph::Graph G1;
-	v *= n;
-	e *= x;
+		int v = 5;
+		int e = 1;
+		graph::Graph G1;
+		v *= n;
+		e *= x;
 	{
 		//force wait
 		std::chrono::high_resolution_clock::time_point t1 = std::chrono::high_resolution_clock::now();
@@ -57,12 +57,12 @@ int main()
 
 		for (int i = 0; i < e*v; i++)
 		{
-			G1.addEdge(i%v, (i+1)%v,10);
+			G1.addEdge(i%v, (i+1)%v,i%v);
 		}
 
 		for (int i = 0; i < e*v; i++)
 		{
-			G1.removeDirEdge(i%v, (i + 1) % v);
+			G1.removeDirEdge(i%v, (i + 1) % v, [](int cost) ->bool {return cost == 3; }); 
 		}
 
 	

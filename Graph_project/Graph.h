@@ -55,14 +55,20 @@ namespace graph {
 		void addEdge(std::size_t from, std::size_t to, int cost=1, bool directed = true);
 	
 
-
+		
 		void removeEdges(std::size_t from, std::size_t to);
 
 		/*!
-			Template method.
+			removes an edge between from and to vertices.
+			Removes the first edge found without regard for directed flag and cost value
+		*/
+		void removeDirEdge(std::size_t from, std::size_t to);
+
+
+		/*!
+			Template method for removing single edge.
 			Removes a first edge that meets the conditions defined by Pred
 		*/
-		
 		template<typename _Pr>
 		void removeDirEdge(std::size_t from, std::size_t to,_Pr& Pred )
 		{
@@ -73,10 +79,6 @@ namespace graph {
 			auto &it_to = Vertices.find(to);
 			auto &it_end = Vertices.end();
 
-			//auto &it_edge = std::find_if(Edges.begin(), Edges.end(), [&it_from, &it_to](const std::unique_ptr<Edge> &e)->bool {return (it_from->second.get() == e->getSource() && it_to->second.get() == e->getDestination()); });
-
-
-
 			//check if both ends are existing
 			if (it_from != it_end && it_to != it_end)
 			{
@@ -85,19 +87,33 @@ namespace graph {
 				Vertex*  vertexFromPtr = it_from->second.get();
 				Vertex*  vertexToPtr = it_to->second.get();
 				edgePtr = vertexFromPtr->findOutEdge(vertexToPtr,Pred);
-
-				it_to->second->removeInEdge(it_from->second.get(), edgePtr); //remove pointer to edge from receiving vertex
-				it_from->second->removeOutEdge(it_to->second.get(), edgePtr); //remove the edge itself
+				if (edgePtr != nullptr)
+				{
+					it_to->second->removeInEdge(it_from->second.get(), edgePtr); //remove pointer to edge from receiving vertex
+					it_from->second->removeOutEdge(it_to->second.get(), edgePtr); //remove the edge itself
+				}
 			}
 
 
 		}
 
 
+		
 
-		void removeNode(std::size_t node);
+		/*!
+			remove single vertex with specified id
+		*/
+		void removeVertex(std::size_t node);
 
+		/*!
+			returns number of vertices stored in graph
+		*/
 		std::size_t vertexCount();
+
+		/*!
+			returns number of edges stored in graph.
+			Potential overflow value might occur if total number of edges is greater than size of size_t
+		*/
 		std::size_t edgeCount();
 
 		
@@ -115,7 +131,9 @@ namespace graph {
 		//map of all vertices,key is unique ID assigned to each vertex
 		std::unordered_map<std::size_t, std::unique_ptr<Vertex>> Vertices;
 		
-
+		/*!
+			returns string representation of single vertice
+		*/
 		std::string Graph::vertexToString(const std::pair <const std::size_t , std::unique_ptr<Vertex>>& it);
 
 	};
@@ -124,22 +142,43 @@ namespace graph {
 	class Graph::Vertex
 	{
 	public:
+
+		/*!
+			parametrized ctor
+		*/
 		Vertex(std::size_t id);
 
+		/*!
+			dtor
+		*/
 		virtual ~Vertex();
 
+
+		/*!
+			returns ID of vertex
+		*/
 		std::size_t getID();
 
+		/*!
+			returns the  total number of edges that go out of this vertex
+		*/
 		std::size_t countEdges();
 
-	private:
+
 		/*!
 			returns a pointer to first Edge that reaches to vertex based on specified predicament
+		*/
+		const graph::Graph::Edge*  findOutEdge(const Vertex*  to) const;
+
+		
+		/*!
+			Template method for findind outedge
+			returns const pointer to outedge that starts at from Vertex that meets the predicament
 		*/
 		template<typename _Pr>
 		const graph::Graph::Edge*  findOutEdge(const Vertex*  to,_Pr& Pred) const
 		{
-			auto &it = std::find_if(outEdges.begin(), outEdges.end(), [&to](const std::unique_ptr<Edge>& E)->bool {return E->getDestination() == to; });
+			auto &it = std::find_if(outEdges.begin(), outEdges.end(), [&to, &Pred](const std::unique_ptr<Edge>& E)->bool {return E->getDestination() == to && Pred(E->getCost()); });
 
 			if (it != outEdges.end())
 			{
@@ -151,13 +190,19 @@ namespace graph {
 
 
 		/*!
+			returns const pointer to inedge that starts at from Vertex
+		*/
+		const graph::Graph::Edge*  findInEdge(const Vertex*  from) const;
+
+
+		/*!
 			returns a pointer to first Edge that arrives from vertex based on specified predicament
 		*/
 		template<typename _Pr>
 		const graph::Graph::Edge*  findInEdge(const Vertex*  from,_Pr& Pred) const
 		{
 
-			const auto &it = std::find_if(inEdges.begin(), inEdges.end(), [&from](const Edge* E)->bool {return E->getDestination() == from; });
+			const auto &it = std::find_if(inEdges.begin(), inEdges.end(), [&from,&Pred](const Edge* E)->bool {return E->getDestination() == from && Pred(E->getCost()); });
 
 
 			if (it != inEdges.end())
@@ -168,17 +213,32 @@ namespace graph {
 			return nullptr;
 		}
 
+
+		/*!
+			adds inedge to vertex
+		*/
 		void addInEdge(Edge* edge);
-		void addOutEdge(Edge* edge);
 
+		/*!
+			adds outedge to vertex
+			By design it stores the object as smart pointer.
+			The edge must be dynamically allocated object  
+		*/
+		void addOutEdge(Edge* edge); //#TODO refractor this for passing smart pointer?
 
-		void removeInEdge(const std::size_t to, const Edge* edge);
-		void removeOutEdge(const std::size_t from, const Edge* edge);
+		//#TODO remove functions do not need Vertex/ID data for operation
+		// 
 
-		void removeInEdge(const Vertex* to, const Edge* edge);
-		void removeOutEdge(const Vertex* from, const Edge* edge);
+		/*!
+			removes inedge that is starts at Vertex specifed by from ID and 
+		*/
+		void removeInEdge(const std::size_t from, const Edge* edge);
+		void removeOutEdge(const std::size_t to, const Edge* edge);
 
+		void removeInEdge(const Vertex* from, const Edge* edge);
+		void removeOutEdge(const Vertex* to, const Edge* edge);
 
+	private:
 
 		std::size_t uniq_id; //unique ID #TODO enforcing uniquness and reclamation of unused IDs without 
 
