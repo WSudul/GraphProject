@@ -25,7 +25,7 @@ int main()
 	for (int n = 1; n < 5;n+=4)
 	{
 		int v = 5;
-		int e = 1;
+		int e = 2;
 		graph::Graph G1;
 		v *= n;
 		e *= x;
@@ -39,7 +39,7 @@ int main()
 
 			std::chrono::high_resolution_clock::time_point t2 = std::chrono::high_resolution_clock::now();
 			time_span = std::chrono::duration_cast<std::chrono::duration<double>>(t2 - t1);
-		} while (time_span.count() < 0.60);
+		} while (time_span.count() < 0.40);
 
 	}
 
@@ -63,6 +63,11 @@ int main()
 		for (int i = 0; i < e*v; i++)
 		{
 			G1.removeDirEdge(i%v, (i + 1) % v, [](int cost) ->bool {return cost == 3; }); 
+		}
+
+		for (int i = 0; i < v; i++)
+		{
+			G1.removeVertex(i);
 		}
 
 	
@@ -100,7 +105,7 @@ int main()
 
 			std::chrono::high_resolution_clock::time_point t2 = std::chrono::high_resolution_clock::now();
 			time_span = std::chrono::duration_cast<std::chrono::duration<double>>(t2 - t1);
-		} while (time_span.count() < 1.00);
+		} while (time_span.count() < 0.50);
 
 	}
 	_CrtDumpMemoryLeaks();
