@@ -184,15 +184,44 @@ namespace graph {
 			Vertex*  vertexToPtr = it_to->second.get();
 			edgePtr = vertexFromPtr->findOutEdge(vertexToPtr);
 
-			it_to->second->removeInEdge(it_from->second.get(), edgePtr); //remove pointer to edge from receiving vertex
-			it_from->second->removeOutEdge(it_to->second.get(), edgePtr); //remove the edge itself
+			it_to->second->removeInEdge( edgePtr); //remove pointer to edge from receiving vertex
+			it_from->second->removeOutEdge(edgePtr); //remove the edge itself
 		}
 
 
 	}
 
-	inline void Graph::removeVertex(std::size_t node)
+	void Graph::removeVertex(std::size_t id)
 	{
+		auto &it=Vertices.find(id);
+
+		if (it != Vertices.end())
+		{
+			//remove the vertex
+
+			auto& val = it->second;
+			
+			auto& edge_it = val->begin();
+			for (; edge_it != val->end();++edge_it)
+			{
+				auto dest = edge_it->getDestination()->getID();
+				
+				auto &dest_it = Vertices.find(dest);
+				if (dest_it != Vertices.end())
+				{
+					dest_it->second->removeInEdge(&*(edge_it));
+				}
+				else
+				{
+					//throw exception
+				}
+			}
+
+			Vertices.erase(id);
+
+		}
+
+
 	}
 
 
@@ -358,27 +387,16 @@ namespace graph {
 			
 	}
 
-	inline void Graph::Vertex::removeInEdge(const std::size_t from, const Edge * edge)
-	{
-		//std::find_if(Vertices.begin(), Vertices.end(), [&from](const std::unique_ptr<Vertex> & v)->bool {return v->getID()==from;});
-		//Vertices.find();
+	
 
-
-	}
-
-	inline void Graph::Vertex::removeOutEdge(const std::size_t to, const  Edge * edge)
-	{
-	}
-
-
-	inline void Graph::Vertex::removeInEdge(const Vertex * from, const  Edge * edge)
+	inline void Graph::Vertex::removeInEdge(const  Edge * edge)
 	{
 
 		inEdges.erase(std::remove(inEdges.begin(), inEdges.end(), edge));
 		
 	}
 
-	inline void Graph::Vertex::removeOutEdge(const Vertex * to, const Edge * edge)
+	inline void Graph::Vertex::removeOutEdge( const Edge * edge)
 	{
 		auto &it = std::find_if(outEdges.begin(), outEdges.end(), [&edge](const std::unique_ptr<Edge>&e)->bool {return edge == e.get(); });
 		if (it != outEdges.end())

@@ -89,8 +89,8 @@ namespace graph {
 				edgePtr = vertexFromPtr->findOutEdge(vertexToPtr,Pred);
 				if (edgePtr != nullptr)
 				{
-					it_to->second->removeInEdge(it_from->second.get(), edgePtr); //remove pointer to edge from receiving vertex
-					it_from->second->removeOutEdge(it_to->second.get(), edgePtr); //remove the edge itself
+					it_to->second->removeInEdge(edgePtr); //remove pointer to edge from receiving vertex
+					it_from->second->removeOutEdge(edgePtr); //remove the edge itself
 				}
 			}
 
@@ -103,7 +103,7 @@ namespace graph {
 		/*!
 			remove single vertex with specified id
 		*/
-		void removeVertex(std::size_t node);
+		void removeVertex(std::size_t id);
 
 		/*!
 			returns number of vertices stored in graph
@@ -127,6 +127,43 @@ namespace graph {
 		class Vertex;
 
 		class Edge;
+
+	//#TODO rework this but keep iterator public
+	public:
+		class OutEdgeIterator
+		{
+		public:
+			OutEdgeIterator(std::vector<std::unique_ptr<Edge>>::iterator& pos) :
+				pos_(pos)
+			{};
+
+			bool operator==(const OutEdgeIterator& rhs) { return pos_ == rhs.pos_; }
+			bool operator!=(const OutEdgeIterator& rhs) { return pos_ != rhs.pos_; }
+			bool operator<=(const OutEdgeIterator& rhs) { return pos_ <= rhs.pos_; }
+			bool operator>=(const OutEdgeIterator& rhs) { return pos_ >= rhs.pos_; }
+			bool operator<(const OutEdgeIterator& rhs) { return pos_ < rhs.pos_; }
+			bool operator>(const OutEdgeIterator& rhs) { return pos_ > rhs.pos_; }
+
+			void operator ++() { ++pos_; }
+
+			
+			Edge& operator*() {
+				return *(*pos_); //double-dereferencing
+			}
+
+			//#TODO rework operator
+			Edge* operator->() {
+				return pos_->get();
+			}
+
+		private:
+			std::vector<std::unique_ptr<Edge>>::iterator pos_;
+		};
+		
+
+	private:
+
+
 
 		//map of all vertices,key is unique ID assigned to each vertex
 		std::unordered_map<std::size_t, std::unique_ptr<Vertex>> Vertices;
@@ -232,11 +269,16 @@ namespace graph {
 		/*!
 			removes inedge that is starts at Vertex specifed by from ID and 
 		*/
-		void removeInEdge(const std::size_t from, const Edge* edge);
-		void removeOutEdge(const std::size_t to, const Edge* edge);
+		
+		void removeInEdge(const Edge* edge);
+		void removeOutEdge( const Edge* edge);
 
-		void removeInEdge(const Vertex* from, const Edge* edge);
-		void removeOutEdge(const Vertex* to, const Edge* edge);
+		OutEdgeIterator& begin() {
+			return *(outEdgeBegin_Iter = std::move(std::unique_ptr<OutEdgeIterator>(new OutEdgeIterator(outEdges.begin()))));
+		};
+		OutEdgeIterator& end() {
+			return *(outEdgeEnd_Iter = std::move(std::unique_ptr<OutEdgeIterator>(new OutEdgeIterator(outEdges.end()))));
+		}
 
 	private:
 
@@ -246,7 +288,13 @@ namespace graph {
 
 		std::vector<Edge*> inEdges; //list of all edges that are pointing to this node
 		//std::vector<Edge*> outEdges; //list of all edges that are pointing from this node
+		
 		std::vector<std::unique_ptr<Edge>> outEdges;
+
+		//#TODO consider whether you need to keep an eye on begin,end iterators
+		std::unique_ptr<OutEdgeIterator> outEdgeBegin_Iter;
+		std::unique_ptr<OutEdgeIterator> outEdgeEnd_Iter;
+
 	};
 
 
