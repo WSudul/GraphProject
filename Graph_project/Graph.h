@@ -137,29 +137,57 @@ namespace graph {
 				pos_(pos)
 			{};
 
-			bool operator==(const OutEdgeIterator& rhs) { return pos_ == rhs.pos_; }
-			bool operator!=(const OutEdgeIterator& rhs) { return pos_ != rhs.pos_; }
-			bool operator<=(const OutEdgeIterator& rhs) { return pos_ <= rhs.pos_; }
-			bool operator>=(const OutEdgeIterator& rhs) { return pos_ >= rhs.pos_; }
-			bool operator<(const OutEdgeIterator& rhs) { return pos_ < rhs.pos_; }
-			bool operator>(const OutEdgeIterator& rhs) { return pos_ > rhs.pos_; }
-
+			bool operator==(const OutEdgeIterator& rhs) const { return pos_ == rhs.pos_; }
+			bool operator!=(const OutEdgeIterator& rhs) const { return pos_ != rhs.pos_; }
+			bool operator<=(const OutEdgeIterator& rhs) const { return pos_ <= rhs.pos_; }
+			bool operator>=(const OutEdgeIterator& rhs) const { return pos_ >= rhs.pos_; }
+			bool operator<(const OutEdgeIterator& rhs) const { return pos_ < rhs.pos_; }
+			bool operator>(const OutEdgeIterator& rhs) const { return pos_ > rhs.pos_; }
+			//#TODO rework pre/post incr operators
 			void operator ++() { ++pos_; }
 
 			
 			Edge& operator*() {
-				return *(*pos_); //double-dereferencing
+				return **pos_; //double-dereferencing
 			}
 
-			//#TODO rework operator
+			
 			Edge* operator->() {
 				return pos_->get();
 			}
 
 		private:
-			std::vector<std::unique_ptr<Edge>>::iterator pos_;
+			std::vector<std::unique_ptr<Edge>>::iterator& pos_;
 		};
-		
+		class InEdgeIterator
+		{
+		public:
+			InEdgeIterator(std::vector<Edge*>::iterator& pos) :
+				pos_(pos)
+			{};
+
+			bool operator==(const InEdgeIterator& rhs) const { return pos_ == rhs.pos_; }
+			bool operator!=(const InEdgeIterator& rhs) const { return pos_ != rhs.pos_; }
+			bool operator<=(const InEdgeIterator& rhs) const { return pos_ <= rhs.pos_; }
+			bool operator>=(const InEdgeIterator& rhs) const { return pos_ >= rhs.pos_; }
+			bool operator<(const InEdgeIterator& rhs) const { return pos_ < rhs.pos_; }
+			bool operator>(const InEdgeIterator& rhs) const { return pos_ > rhs.pos_; }
+
+			InEdgeIterator& operator ++() { ++pos_; return *this; }
+			InEdgeIterator operator++ (int) { /*make assertions*/ InEdgeIterator tmp(*this); tmp++; return tmp; }
+
+			Edge& operator*() const {
+				return **pos_; //double-dereferencing
+			}
+
+			//#TODO rework operator
+			Edge& operator->() const {
+				return (**pos_);
+			}
+
+		private:
+			std::vector<Edge*>::iterator pos_;
+		};
 
 	private:
 
@@ -273,12 +301,44 @@ namespace graph {
 		void removeInEdge(const Edge* edge);
 		void removeOutEdge( const Edge* edge);
 
-		OutEdgeIterator& begin() {
-			return *(outEdgeBegin_Iter = std::move(std::unique_ptr<OutEdgeIterator>(new OutEdgeIterator(outEdges.begin()))));
+
+		/*!
+		class containing begin() and end() methods for given edge type (inEdge or outEdge)
+		*/
+		class OutEdge
+		{
+		public:
+
+			static OutEdgeIterator& begin(Vertex& obj) {
+
+				return *(obj.outEdgeBegin_Iter = std::move(std::unique_ptr<OutEdgeIterator>(new OutEdgeIterator(obj.outEdges.begin()))));
+			};
+			static OutEdgeIterator& end(Vertex& obj) {
+				return *(obj.outEdgeEnd_Iter = std::move(std::unique_ptr<OutEdgeIterator>(new OutEdgeIterator(obj.outEdges.end()))));
+			};
+
 		};
-		OutEdgeIterator& end() {
-			return *(outEdgeEnd_Iter = std::move(std::unique_ptr<OutEdgeIterator>(new OutEdgeIterator(outEdges.end()))));
-		}
+		
+
+
+
+
+		/*!
+			class containing begin() and end() methods for given edge type (inEdge or outEdge)
+		*/
+		class InEdge
+		{
+		public:
+			//#TODO rework this for const Vertex& obj ? 
+			static InEdgeIterator& begin(Vertex& obj) {
+				return *(obj.inEdgeBegin_Iter = std::move(std::unique_ptr<InEdgeIterator>(new InEdgeIterator(obj.inEdges.begin()))));
+			};
+			static InEdgeIterator& end(Vertex& obj) {
+				return *(obj.inEdgeEnd_Iter = std::move(std::unique_ptr<InEdgeIterator>(new InEdgeIterator(obj.inEdges.end()))));
+			}
+		};
+
+
 
 	private:
 
@@ -294,6 +354,12 @@ namespace graph {
 		//#TODO consider whether you need to keep an eye on begin,end iterators
 		std::unique_ptr<OutEdgeIterator> outEdgeBegin_Iter;
 		std::unique_ptr<OutEdgeIterator> outEdgeEnd_Iter;
+		
+		std::unique_ptr<InEdgeIterator> inEdgeBegin_Iter;
+		std::unique_ptr<InEdgeIterator> inEdgeEnd_Iter;
+
+
+
 
 	};
 

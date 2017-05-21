@@ -25,7 +25,7 @@ int main()
 	for (int n = 1; n < 5;n+=4)
 	{
 		int v = 5;
-		int e = 2;
+		int e = 4;
 		graph::Graph G1;
 		v *= n;
 		e *= x;
