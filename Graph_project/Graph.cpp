@@ -193,6 +193,7 @@ namespace graph {
 
 	void Graph::removeVertex(std::size_t id)
 	{
+		//find vertex
 		auto &it=Vertices.find(id);
 
 		if (it != Vertices.end())
@@ -201,14 +202,19 @@ namespace graph {
 
 			auto& val = it->second;
 			
-			auto& edge_it = val->begin();
-			for (; edge_it != val->end();++edge_it)
+			//iterate over all outEdges and remove pointers from inEdges container of destination vertices
+			
+
+			for (auto& edge_it = val->begin_outEdge(); edge_it != val->end_outEdge();++edge_it)
 			{
+				//get destination ID and firnd the destination vertex
 				auto dest = edge_it->getDestination()->getID();
-				
 				auto &dest_it = Vertices.find(dest);
+
+
 				if (dest_it != Vertices.end())
 				{
+					//remove pointer to inEdge from destination vertex
 					dest_it->second->removeInEdge(&*(edge_it));
 				}
 				else
@@ -217,6 +223,30 @@ namespace graph {
 				}
 			}
 
+
+			//repeat procedure for inEdges
+			for (auto& edge_it = val->begin_inEdge(); edge_it != val->end_inEdge(); ++edge_it)
+			{
+				//get destination ID and find the destination vertex
+				
+				auto source = (edge_it)->getDestination()->getID();
+				auto &source_it = Vertices.find(source);
+
+
+				if (source_it != Vertices.end())
+				{
+					//remove pointer to inEdge from destination vertex
+					source_it->second->removeOutEdge(&*(edge_it));
+				}
+				else
+				{
+					//throw exception
+				}
+			}
+
+
+
+			//erase the vertex from container
 			Vertices.erase(id);
 
 		}
@@ -401,6 +431,7 @@ namespace graph {
 		auto &it = std::find_if(outEdges.begin(), outEdges.end(), [&edge](const std::unique_ptr<Edge>&e)->bool {return edge == e.get(); });
 		if (it != outEdges.end())
 			outEdges.erase(it);
+		
 		//outEdges.erase(std::remove_if(outEdges.begin(), outEdges.end(), [&edge](const std::unique_ptr<Edge>&e)->bool {return edge == e.get(); }));
 	}
 
