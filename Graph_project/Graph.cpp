@@ -193,6 +193,7 @@ namespace graph {
 
 	void Graph::removeVertex(std::size_t id)
 	{
+		//find vertex
 		auto &it=Vertices.find(id);
 
 		if (it != Vertices.end())
@@ -201,14 +202,19 @@ namespace graph {
 
 			auto& val = it->second;
 			
-			auto& edge_it = val->begin();
-			for (; edge_it != val->end();++edge_it)
+			//iterate over all outEdges and remove pointers from inEdges container of destination vertices
+			
+			auto& edge_it = Vertex::OutEdge::begin(*(val));
+			for (; edge_it != Vertex::OutEdge::end(*(val));++edge_it)
 			{
+				//get destination ID
 				auto dest = edge_it->getDestination()->getID();
+				
 				
 				auto &dest_it = Vertices.find(dest);
 				if (dest_it != Vertices.end())
 				{
+					//remove pointer to inEdge from destination vertex
 					dest_it->second->removeInEdge(&*(edge_it));
 				}
 				else
