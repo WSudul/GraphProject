@@ -7,19 +7,19 @@
 #include <iterator>
 #include <memory>
 #include <string>
-#include <iostream>
+
 /*!
 goals:
 
-Node access -> O(1)
-Add node	-> O(1)
-Add edge	-> O(1)
-Remove edge -> O(~1)
-Remove node -> O(V+E)
+Node access -> O(1) //depends upon container, unordered_map offers average  amortized O(1)
+Add node	-> O(1) //depends upon container, but O(1) amortized for average case or O(nlogn) without node
+Add edge	-> O(1) //requires finding both Nodes O(1) and then adding relevant info O(1) in both of them
+Remove edge -> O(~1) //requires finding both Nodes O(1), then performing removal on edge ( O(deg(V) ) in this case), worst case O(2(n+n))=O(n)
+Remove node -> O(V+E) //requires iterating over edge containers (2x O(degV)) and removing inedges and outedges from other Vertices (O(1) for finding vertice, O(deg(V_1)) , O(deg(V_2))).
 
-Class representing graph via adjacency list
+Class representing graph via  2 way adjacency list (Node knows both about edges that point from and to the Node)
 
-#TODO add node,edge and then methods for removing them safely in directed and undirected graphs
+#TODO add node,edge and then methods for removing them safely in directed version of graph
 */
 
 namespace graph {
@@ -320,9 +320,7 @@ namespace graph {
 		*/
 		void addOutEdge(Edge* edge); //#TODO refractor this for passing smart pointer?
 
-		//#TODO remove functions do not need Vertex/ID data for operation
-		// 
-
+	
 		/*!
 			removes inedge that is starts at Vertex specifed by from ID and 
 		*/
@@ -406,13 +404,7 @@ namespace graph {
 		
 		std::vector<std::unique_ptr<Edge>> outEdges;
 
-		//#TODO consider whether you need to keep an eye on begin,end iterators
-		std::unique_ptr<OutEdgeIterator> outEdgeBegin_Iter;
-		std::unique_ptr<OutEdgeIterator> outEdgeEnd_Iter;
 		
-		std::unique_ptr<InEdgeIterator> inEdgeBegin_Iter;
-		std::unique_ptr<InEdgeIterator> inEdgeEnd_Iter;
-
 
 
 
