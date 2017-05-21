@@ -159,6 +159,8 @@ namespace graph {
 		private:
 			std::vector<std::unique_ptr<Edge>>::iterator& pos_;
 		};
+
+
 		class InEdgeIterator
 		{
 		public:
@@ -181,8 +183,8 @@ namespace graph {
 			}
 
 			//#TODO rework operator
-			Edge& operator->() const {
-				return (**pos_);
+			Edge* operator->() const {
+				return *pos_;
 			}
 
 		private:
@@ -302,43 +304,64 @@ namespace graph {
 		void removeOutEdge( const Edge* edge);
 
 
+
+
+
 		/*!
-		class containing begin() and end() methods for given edge type (inEdge or outEdge)
-		*/
-		class OutEdge
-		{
-		public:
-
-			static OutEdgeIterator& begin(Vertex& obj) {
-
-				return *(obj.outEdgeBegin_Iter = std::move(std::unique_ptr<OutEdgeIterator>(new OutEdgeIterator(obj.outEdges.begin()))));
-			};
-			static OutEdgeIterator& end(Vertex& obj) {
-				return *(obj.outEdgeEnd_Iter = std::move(std::unique_ptr<OutEdgeIterator>(new OutEdgeIterator(obj.outEdges.end()))));
-			};
-
-		};
 		
+			Returns an iterator pointing to the first element of outEdges
+		*/
+		OutEdgeIterator& begin_outEdge() 
+		{
+			return *(outEdgeBegin_Iter = std::move(std::unique_ptr<OutEdgeIterator>(new OutEdgeIterator(outEdges.begin()))));
+		};
+
+		/*!
+
+			Returns an iterator pointing to the past the last element of outEdges
+		*/
+		OutEdgeIterator& end_outEdge()
+		{
+			return *(outEdgeEnd_Iter = std::move(std::unique_ptr<OutEdgeIterator>(new OutEdgeIterator(outEdges.end()))));
+		};
 
 
 
 
 		/*!
-			class containing begin() and end() methods for given edge type (inEdge or outEdge)
+
+			Returns an iterator pointing to the first element of inEdges
 		*/
-		class InEdge
+		InEdgeIterator& begin_inEdge() 
 		{
-		public:
-			//#TODO rework this for const Vertex& obj ? 
-			static InEdgeIterator& begin(Vertex& obj) {
-				return *(obj.inEdgeBegin_Iter = std::move(std::unique_ptr<InEdgeIterator>(new InEdgeIterator(obj.inEdges.begin()))));
-			};
-			static InEdgeIterator& end(Vertex& obj) {
-				return *(obj.inEdgeEnd_Iter = std::move(std::unique_ptr<InEdgeIterator>(new InEdgeIterator(obj.inEdges.end()))));
-			}
+			return *(inEdgeBegin_Iter = std::move(std::unique_ptr<InEdgeIterator>(new InEdgeIterator(inEdges.begin()))));
 		};
 
+		/*!
 
+			Returns an iterator pointing to the past the last element of inEdges
+		*/
+		InEdgeIterator& end_inEdge() 
+		{
+			return *(inEdgeEnd_Iter = std::move(std::unique_ptr<InEdgeIterator>(new InEdgeIterator(inEdges.end()))));
+		}
+
+
+		/*!
+			Returns an iterator pointing to the first element of edges starting from this Vertex.
+		*/
+		OutEdgeIterator& begin()
+		{
+			return begin_outEdge();
+		}
+
+		/*!
+		Returns an iterator pointing to the past the last element of edges starting from this Vertex.
+		*/
+		OutEdgeIterator& end()
+		{
+			return end_outEdge();
+		}
 
 	private:
 
