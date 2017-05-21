@@ -7,6 +7,7 @@
 #include <iterator>
 #include <memory>
 #include <string>
+#include <iostream>
 /*!
 goals:
 
@@ -17,11 +18,6 @@ Remove edge -> O(~1)
 Remove node -> O(V+E)
 
 Class representing graph via adjacency list
-#TODO Implement all needed methods and throw away notion of storing thrice cursed grid in Matrix
-
-#TODO NEED TO BE ABLE TO ADDRESS SPECIFIC NODES SOMEHOW. SHOULD BE CHEAP TO DO!
-#TODO implement the class by assuming that 1 each vertex has unique_ID that has nothing to do with "position" in the grid
-#TODO edge class
 
 #TODO add node,edge and then methods for removing them safely in directed and undirected graphs
 */
@@ -128,7 +124,7 @@ namespace graph {
 
 		class Edge;
 
-	//#TODO rework this but keep iterator public
+	
 	public:
 		class OutEdgeIterator
 		{
@@ -137,14 +133,32 @@ namespace graph {
 				pos_(pos)
 			{};
 
+			OutEdgeIterator(const OutEdgeIterator& O) :
+				pos_(O.pos_)
+			{};
+
+			~OutEdgeIterator()
+			{
+				//std::cout << "OutEdgeIterator dtor" << std::endl;
+			};
+
 			bool operator==(const OutEdgeIterator& rhs) const { return pos_ == rhs.pos_; }
 			bool operator!=(const OutEdgeIterator& rhs) const { return pos_ != rhs.pos_; }
 			bool operator<=(const OutEdgeIterator& rhs) const { return pos_ <= rhs.pos_; }
 			bool operator>=(const OutEdgeIterator& rhs) const { return pos_ >= rhs.pos_; }
 			bool operator<(const OutEdgeIterator& rhs) const { return pos_ < rhs.pos_; }
 			bool operator>(const OutEdgeIterator& rhs) const { return pos_ > rhs.pos_; }
+
+			OutEdgeIterator& operator=(const OutEdgeIterator& rhs)
+			{
+				this->pos_ = rhs.pos_;
+			}
+
+
 			//#TODO rework pre/post incr operators
-			void operator ++() { ++pos_; }
+			OutEdgeIterator& operator ++() { ++pos_; return *this ; }
+			OutEdgeIterator operator++ (int) { /*make assertions*/ OutEdgeIterator tmp(*this); ++pos_; return tmp; }
+
 
 			
 			Edge& operator*() {
@@ -157,7 +171,7 @@ namespace graph {
 			}
 
 		private:
-			std::vector<std::unique_ptr<Edge>>::iterator& pos_;
+			std::vector<std::unique_ptr<Edge>>::iterator pos_;
 		};
 
 
@@ -168,22 +182,35 @@ namespace graph {
 				pos_(pos)
 			{};
 
+			InEdgeIterator(const InEdgeIterator& O) :
+				pos_(O.pos_)
+			{};
+
+			~InEdgeIterator()
+			{
+				//std::cout << "InEdgeIterator dtor" << std::endl;
+			};
+
 			bool operator==(const InEdgeIterator& rhs) const { return pos_ == rhs.pos_; }
 			bool operator!=(const InEdgeIterator& rhs) const { return pos_ != rhs.pos_; }
 			bool operator<=(const InEdgeIterator& rhs) const { return pos_ <= rhs.pos_; }
 			bool operator>=(const InEdgeIterator& rhs) const { return pos_ >= rhs.pos_; }
 			bool operator<(const InEdgeIterator& rhs) const { return pos_ < rhs.pos_; }
 			bool operator>(const InEdgeIterator& rhs) const { return pos_ > rhs.pos_; }
-
+			
+			InEdgeIterator& operator=(const InEdgeIterator& rhs)
+			{
+				this->pos_ = rhs.pos_;
+			}
 			InEdgeIterator& operator ++() { ++pos_; return *this; }
-			InEdgeIterator operator++ (int) { /*make assertions*/ InEdgeIterator tmp(*this); tmp++; return tmp; }
+			InEdgeIterator operator++ (int) { /*make assertions*/ InEdgeIterator tmp(*this); ++pos_ ; return tmp; }
 
-			Edge& operator*() const {
+			Edge& operator*()  {
 				return **pos_; //double-dereferencing
 			}
 
 			//#TODO rework operator
-			Edge* operator->() const {
+			Edge* operator->()  {
 				return *pos_;
 			}
 
@@ -311,18 +338,23 @@ namespace graph {
 		
 			Returns an iterator pointing to the first element of outEdges
 		*/
-		OutEdgeIterator& begin_outEdge() 
+		OutEdgeIterator begin_outEdge() 
 		{
-			return *(outEdgeBegin_Iter = std::move(std::unique_ptr<OutEdgeIterator>(new OutEdgeIterator(outEdges.begin()))));
+			//return *(outEdgeBegin_Iter = std::move(std::unique_ptr<OutEdgeIterator>(new OutEdgeIterator(outEdges.begin()))));
+			
+			return OutEdgeIterator(outEdges.begin());
 		};
 
 		/*!
 
 			Returns an iterator pointing to the past the last element of outEdges
 		*/
-		OutEdgeIterator& end_outEdge()
+		OutEdgeIterator end_outEdge()
 		{
-			return *(outEdgeEnd_Iter = std::move(std::unique_ptr<OutEdgeIterator>(new OutEdgeIterator(outEdges.end()))));
+			
+			//return *(outEdgeEnd_Iter = std::move(std::unique_ptr<OutEdgeIterator>(new OutEdgeIterator(outEdges.end()))));
+			//outEdgeEnd_Iter = std::move(std::unique_ptr<OutEdgeIterator>(new OutEdgeIterator(outEdges.end())));
+			return OutEdgeIterator(outEdges.end());
 		};
 
 
@@ -414,11 +446,10 @@ namespace graph {
 
 	private:
 		int cost;
-		bool directed;
-		std::size_t id;
 		Vertex* source;
 		Vertex* destination;
-
+		bool directed;
+		std::size_t id;
 	};
 
 

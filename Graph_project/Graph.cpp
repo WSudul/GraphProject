@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include "Graph.h"
-#include <iostream>
+
 namespace graph {
 
 	Graph::Edge::Edge()
@@ -16,7 +16,7 @@ namespace graph {
 
 	Graph::Edge::~Edge()
 	{
-		std::cout << "Edge dtor!" << std::endl;
+		//std::cout << "Edge dtor!" << std::endl;
 	}
 
 
@@ -51,13 +51,13 @@ namespace graph {
 
 	Graph::Graph()
 	{
-		std::cout << "Graph ctor!" << std::endl;
+		//std::cout << "Graph ctor!" << std::endl;
 	}
 
 
 	Graph::~Graph()
 	{
-		std::cout << "Graph dtor!" << std::endl;
+		//std::cout << "Graph dtor!" << std::endl;
 	}
 
 
@@ -194,7 +194,7 @@ namespace graph {
 	void Graph::removeVertex(std::size_t id)
 	{
 		//find vertex
-		auto &it=Vertices.find(id);
+		auto it=Vertices.find(id);
 
 		if (it != Vertices.end())
 		{
@@ -203,19 +203,25 @@ namespace graph {
 			auto& val = it->second;
 			
 			//iterate over all outEdges and remove pointers from inEdges container of destination vertices
+			auto edge_it = val->begin_outEdge();// val->begin_outEdge();
 			
 
-			for (auto& edge_it = val->begin_outEdge(); edge_it != val->end_outEdge();++edge_it)
+			
+			//std::cout << "start looping"; //start looping
+			for (; edge_it != val->end_outEdge();++edge_it)
 			{
-				//get destination ID and firnd the destination vertex
+				//get destination ID and find the destination vertex
 				auto dest = edge_it->getDestination()->getID();
-				auto &dest_it = Vertices.find(dest);
+				auto dest_it = Vertices.find(dest);
 
 
 				if (dest_it != Vertices.end())
 				{
+					const auto *temp = &*(edge_it);
 					//remove pointer to inEdge from destination vertex
-					dest_it->second->removeInEdge(&*(edge_it));
+					dest_it->second->removeInEdge(temp);
+
+					dest_it->second->countEdges();
 				}
 				else
 				{
@@ -225,18 +231,21 @@ namespace graph {
 
 
 			//repeat procedure for inEdges
-			for (auto& edge_it = val->begin_inEdge(); edge_it != val->end_inEdge(); ++edge_it)
+			for (auto edge_it = val->begin_inEdge(); edge_it != val->end_inEdge(); ++edge_it)
 			{
-				//get destination ID and find the destination vertex
+				//get source ID and find the source vertex
 				
-				auto source = (edge_it)->getDestination()->getID();
+				auto source = (edge_it)->getSource()->getID();
 				auto &source_it = Vertices.find(source);
 
 
 				if (source_it != Vertices.end())
 				{
-					//remove pointer to inEdge from destination vertex
-					source_it->second->removeOutEdge(&*(edge_it));
+					const auto *temp = &*(edge_it);
+					//remove outEdge from source vertex
+					source_it->second->removeOutEdge(temp);
+
+					source_it->second->countEdges();
 				}
 				else
 				{
@@ -340,7 +349,7 @@ namespace graph {
 
 	Graph::Vertex::~Vertex()
 	{
-		std::cout << "Vertex dtor!" << std::endl;
+		//std::cout << "Vertex dtor!" << std::endl;
 
 	}
 
@@ -370,12 +379,6 @@ namespace graph {
 		return nullptr;
 	}
 
-
-	
-
-	
-
-	//#TODO add edge needs only a pointer to edge
 
 
 
@@ -418,20 +421,32 @@ namespace graph {
 	}
 
 	
-
+	
 	inline void Graph::Vertex::removeInEdge(const  Edge * edge)
 	{
 
+
+		//remove-erase idiom on vector container
 		inEdges.erase(std::remove(inEdges.begin(), inEdges.end(), edge));
+		int newsize = inEdges.size();
+
+
 		
+		return;
 	}
 
 	inline void Graph::Vertex::removeOutEdge( const Edge * edge)
-	{
-		auto &it = std::find_if(outEdges.begin(), outEdges.end(), [&edge](const std::unique_ptr<Edge>&e)->bool {return edge == e.get(); });
-		if (it != outEdges.end())
+	{ 
+
+		//remove-erase idiom behaves wonkly. Exception thrown when edge was NOT in container (reason: probably giving wrong pointer (inEdge pointer)
+
+		auto it=(std::find_if(outEdges.begin(), outEdges.end(), [&edge](const std::unique_ptr<Edge>&e)->bool {return edge == e.get(); }));
+		
+		
+		if(it!=outEdges.end())
 			outEdges.erase(it);
 		
+		return;
 		//outEdges.erase(std::remove_if(outEdges.begin(), outEdges.end(), [&edge](const std::unique_ptr<Edge>&e)->bool {return edge == e.get(); }));
 	}
 
