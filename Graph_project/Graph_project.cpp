@@ -11,6 +11,20 @@
 #include <chrono>
 #include <fstream>
 
+//forces busy wait for at least val seconds
+void forceWait(const double val)
+{
+	std::chrono::high_resolution_clock::time_point t1 = std::chrono::high_resolution_clock::now();
+	std::chrono::duration<double> time_span;
+	do {
+
+
+
+		std::chrono::high_resolution_clock::time_point t2 = std::chrono::high_resolution_clock::now();
+		time_span = std::chrono::duration_cast<std::chrono::duration<double>>(t2 - t1);
+	} while (time_span.count() <val);
+}
+
 
 
 int main()
@@ -21,34 +35,18 @@ int main()
 	std::ofstream file;
 	file.open("maptest.txt");
 
-	for (int x = 1; x < 2; x++)
-	for (int n = 1; n < 5;n+=4)
+	for (int x = 1; x < 4; x++)
+	for (int n = 1; n < 50000;n+=1000)
 	{
-		int v = 5;
+		int v = 10;
 		int e = 4;
 		graph::Graph G1;
 		v *= n;
 		e *= x;
-	{
-		//force wait
-		std::chrono::high_resolution_clock::time_point t1 = std::chrono::high_resolution_clock::now();
-		std::chrono::duration<double> time_span;
-		do {
+		
+		//forceWait(0.50);
 
-
-
-			std::chrono::high_resolution_clock::time_point t2 = std::chrono::high_resolution_clock::now();
-			time_span = std::chrono::duration_cast<std::chrono::duration<double>>(t2 - t1);
-		} while (time_span.count() < 0.40);
-
-	}
-
-
-
-	//G1.addVertex();
-	//G1.addVertex();
-	//G1.addVertex();
-	
+		//start clock
 		std::chrono::high_resolution_clock::time_point t1 = std::chrono::high_resolution_clock::now();
 		for (int i = 0; i < v; i++)
 		{
@@ -57,15 +55,18 @@ int main()
 
 		for (int i = 0; i < e*v; i++)
 		{
-			G1.addEdge(i%v, (i+1)%v,i%v);
+			G1.addEdge((i*2)%v, (i+2)%v,i%v);
 		}
 
+		//remove all edges that meet lambda predicament
 		for (int i = 0; i < e*v; i++)
 		{
-			G1.removeDirEdge(i%v, (i + 1) % v, [](int cost) ->bool {return cost == 3; }); 
+			G1.removeDirEdge(i%v, (i + 1) % v, [](int cost) ->bool {return cost == 100; }); 
 		}
 
-		for (int i = 0; i < v; i++)
+
+		//remove half of vertices
+		for (int i = 0; i < v/2; i++)
 		{
 			G1.removeVertex(i);
 		}
@@ -74,7 +75,7 @@ int main()
 		std::chrono::high_resolution_clock::time_point t2 = std::chrono::high_resolution_clock::now();
 		std::chrono::duration<double> time_span = std::chrono::duration_cast<std::chrono::duration<double>>(t2-t1);
 	
-		std::cout <<"vertices total="<< v <<"edges per vertice="<<e<<"time=" << time_span.count() << std::endl;
+		std::cout <<"vertices total= "<< v <<"\tedges per vertice= "<<e<<"time= " << time_span.count() << std::endl;
 		file << v << "\t" <<e<<"\t"<< time_span.count() << "\n";
 
 
@@ -105,7 +106,7 @@ int main()
 
 			std::chrono::high_resolution_clock::time_point t2 = std::chrono::high_resolution_clock::now();
 			time_span = std::chrono::duration_cast<std::chrono::duration<double>>(t2 - t1);
-		} while (time_span.count() < 0.50);
+		} while (time_span.count() < 0.00);
 
 	}
 	_CrtDumpMemoryLeaks();
