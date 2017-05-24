@@ -19,7 +19,6 @@ Remove node -> O(V+E) //requires iterating over edge containers (2x O(degV)) and
 
 Class representing graph via  2 way adjacency list (Node knows both about edges that point from and to the Node)
 
-#TODO add node,edge and then methods for removing them safely in directed version of graph
 */
 
 namespace graph {
@@ -137,8 +136,8 @@ namespace graph {
 
 		GraphIterator end();
 
-	private:
-
+	protected:
+		//#TODO clean up private/public locations
 		//forward declarations
 
 		class Vertex;
@@ -149,10 +148,10 @@ namespace graph {
 	public:
 
 
-
+		//#TODO move implementation outside class?
 		//semi custom iterators (wrappers)
 
-		
+		//#TODO iterator exposes too much info!
 		class GraphIterator
 		{
 		public:
@@ -333,11 +332,17 @@ namespace graph {
 			std::vector<Edge*>::iterator pos_;
 		};
 
-	private:
+	protected:
 
 
 
-		//map of all vertices,key is unique ID assigned to each vertex
+		/*
+			map of all vertices,key is unique ID assigned to each vertex
+			reasoning behind storing smart pointer: Various containers don't guarantee to 
+			keep iterators/pointers valid (e.g. vectors) and keeping the design to be based upon a form of ID (for eg, a string or unsigned int)
+			that could restrict design (?). With smart pointers, I am storing addresses of dynamically created objects.
+			For client's use each Vertex needs to be identified, therefore it's used with unique key value
+		*/
 		std::unordered_map<std::size_t, std::unique_ptr<Vertex>> Vertices;
 		
 		/*!
@@ -346,10 +351,6 @@ namespace graph {
 		std::string Graph::vertexToString(const std::pair <const std::size_t , std::unique_ptr<Vertex>>& it);
 
 	};
-
-
-
-
 
 
 
@@ -384,13 +385,13 @@ namespace graph {
 		*/
 		const graph::Graph::Edge*  findOutEdge(const Vertex*  to) const;
 
-		
+
 		/*!
 			Template method for findind outedge
 			returns const pointer to outedge that starts at from Vertex that meets the predicament
 		*/
 		template<typename _Pr>
-		const graph::Graph::Edge*  findOutEdge(const Vertex*  to,_Pr& Pred) const
+		const graph::Graph::Edge*  findOutEdge(const Vertex*  to, _Pr& Pred) const
 		{
 			auto &it = std::find_if(outEdges.begin(), outEdges.end(), [&to, &Pred](const std::unique_ptr<Edge>& E)->bool {return E->getDestination() == to && Pred(E->getCost()); });
 
@@ -413,10 +414,10 @@ namespace graph {
 			returns a pointer to first Edge that arrives from vertex based on specified predicament
 		*/
 		template<typename _Pr>
-		const graph::Graph::Edge*  findInEdge(const Vertex*  from,_Pr& Pred) const
+		const graph::Graph::Edge*  findInEdge(const Vertex*  from, _Pr& Pred) const
 		{
 
-			const auto &it = std::find_if(inEdges.begin(), inEdges.end(), [&from,&Pred](const Edge* E)->bool {return E->getDestination() == from && Pred(E->getCost()); });
+			const auto &it = std::find_if(inEdges.begin(), inEdges.end(), [&from, &Pred](const Edge* E)->bool {return E->getDestination() == from && Pred(E->getCost()); });
 
 
 			if (it != inEdges.end())
@@ -427,7 +428,10 @@ namespace graph {
 			return nullptr;
 		}
 
+		virtual void setData() {};
+		virtual std::size_t getData() { return std::size_t(); }
 
+	//private:
 		/*!
 			adds inedge to vertex
 		*/
@@ -448,7 +452,7 @@ namespace graph {
 		void removeInEdge(const Edge* edge);
 		void removeOutEdge( const Edge* edge);
 
-
+	//public:
 
 
 
@@ -513,7 +517,7 @@ namespace graph {
 			return end_outEdge();
 		}
 
-	private:
+	protected:
 
 		std::size_t uniq_id; //unique ID #TODO enforcing uniquness and reclamation of unused IDs without 
 
@@ -556,7 +560,7 @@ namespace graph {
 		Vertex* getDestination() const;
 
 
-	private:
+	protected:
 		int cost;
 		Vertex* source;
 		Vertex* destination;

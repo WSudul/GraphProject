@@ -10,6 +10,7 @@
 #include <vector>
 #include <chrono>
 #include <fstream>
+#include "DataGraph.h"
 
 //forces busy wait for at least val seconds
 void forceWait(const double val)
@@ -29,8 +30,6 @@ void forceWait(const double val)
 
 int main()
 {
-	
-	
 	 
 	std::ofstream file;
 	file.open("maptest.txt");
@@ -44,6 +43,18 @@ int main()
 		v *= n;
 		e *= x;
 		
+		graph::Graph* g2= new DataGraph<int>;
+		graph::Graph* g3= new DataGraph<float>;
+
+		g2->addVertex(1);
+		g2->addVertex(2);
+
+		
+
+		std::vector<graph::Graph*> gvec;
+		gvec.push_back(g2);
+		gvec.push_back(g3);
+
 		//forceWait(0.50);
 
 		//start clock
@@ -74,7 +85,7 @@ int main()
 
 		for (auto& nodes : G1)
 		{
-			std::cout<<nodes.getID()<<" ";
+			//std::cout<<nodes.getID()<<" ";
 		}
 
 	
