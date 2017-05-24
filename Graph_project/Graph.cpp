@@ -332,6 +332,15 @@ namespace graph {
 		return std::vector<std::string>();
 	}
 
+	Graph::GraphIterator Graph::begin()
+	{
+		return *(std::move(std::unique_ptr<GraphIterator>(new GraphIterator(Vertices.begin()))));
+	}
+
+	Graph::GraphIterator Graph::end()
+	{
+		return *(std::move(std::unique_ptr<GraphIterator>(new GraphIterator(Vertices.end()))));
+	}
 
 	inline std::size_t Graph::vertexCount()
 	{
