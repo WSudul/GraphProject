@@ -64,11 +64,17 @@ int main()
 			G1.removeDirEdge(i%v, (i + 1) % v, [](int cost) ->bool {return cost == 100; }); 
 		}
 
+		
 
 		//remove half of vertices
 		for (int i = 0; i < v/2; i++)
 		{
 			G1.removeVertex(i);
+		}
+
+		for (auto& nodes : G1)
+		{
+			std::cout<<nodes.getID()<<" ";
 		}
 
 	
