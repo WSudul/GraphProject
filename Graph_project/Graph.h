@@ -486,7 +486,7 @@ namespace graph {
 
 			Returns an iterator pointing to the first element of inEdges
 		*/
-		InEdgeIterator& begin_inEdge() 
+		InEdgeIterator begin_inEdge() 
 		{
 			return *(std::move(std::unique_ptr<InEdgeIterator>(new InEdgeIterator(inEdges.begin()))));
 		};
@@ -495,7 +495,7 @@ namespace graph {
 
 			Returns an iterator pointing to the past the last element of inEdges
 		*/
-		InEdgeIterator& end_inEdge() 
+		InEdgeIterator end_inEdge() 
 		{
 			return *(std::move(std::unique_ptr<InEdgeIterator>(new InEdgeIterator(inEdges.end()))));
 		}
@@ -504,7 +504,7 @@ namespace graph {
 		/*!
 			Returns an iterator pointing to the first element of edges starting from this Vertex.
 		*/
-		OutEdgeIterator& begin()
+		OutEdgeIterator begin()
 		{
 			return begin_outEdge();
 		}
@@ -512,7 +512,7 @@ namespace graph {
 		/*!
 		Returns an iterator pointing to the past the last element of edges starting from this Vertex.
 		*/
-		OutEdgeIterator& end()
+		OutEdgeIterator end()
 		{
 			return end_outEdge();
 		}

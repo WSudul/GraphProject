@@ -26,7 +26,64 @@ void forceWait(const double val)
 	} while (time_span.count() <val);
 }
 
+std::unique_ptr<graph::Graph> grid_square(const unsigned int n)
+{
+	std::unique_ptr<graph::Graph> g(new graph::Graph);
 
+	for (unsigned i = 0; i < n; ++i)
+	{
+		for (unsigned j = 0; j < n; ++j)
+			g->addVertex(i*n + j);
+	}
+	
+	for (unsigned i = 1; i < n-1; ++i)
+	{
+		for (unsigned j = 1; j < n - 1; ++j)
+		{
+			//add edges
+
+			//first set
+			std::size_t pos = i*n + j;
+			g->addEdge(pos + 1, pos);
+			g->addEdge(pos - 1,pos);
+			g->addEdge(pos+n, pos);
+			g->addEdge(pos-n, pos);
+
+			//returning edges
+			g->addEdge(pos,pos + 1);
+			g->addEdge(pos,pos - 1);
+			g->addEdge(pos,pos + n);
+			g->addEdge(pos,pos - n);
+		}
+
+		//border edges
+		for (unsigned i = 0; i < n ; ++i)
+		{
+			std::size_t pos;
+			//bottom border
+			g->addEdge(i, i + n);
+			g->addEdge(i + n, i);
+
+			//top border
+			g->addEdge((n - 1)*n + i, (n - 2)*n + i);
+			g->addEdge((n - 2)*n + i, (n - 1)*n + i);
+
+			//left border
+			pos = n*i;
+			g->addEdge(pos, (pos + 1));
+			g->addEdge((pos + 1), pos);
+
+			//right border
+			pos = (n - 1) + n*i;
+			g->addEdge(pos, pos - 1);
+			g->addEdge(pos - 1, pos);
+
+		};
+
+	}
+
+	return std::move(g);
+}
 
 int main()
 {
@@ -35,7 +92,7 @@ int main()
 	file.open("maptest.txt");
 
 	for (int x = 1; x < 4; x++)
-	for (int n = 1; n < 50000;n+=1000)
+	for (int n = 1; n < 12;n+=10)
 	{
 		int v = 10;
 		int e = 4;
@@ -55,7 +112,15 @@ int main()
 		gvec.push_back(g2);
 		gvec.push_back(g3);
 
-		//forceWait(0.50);
+		delete g2;
+		delete g3;
+
+		//create a square net of vertices
+		std::chrono::high_resolution_clock::time_point t3 = std::chrono::high_resolution_clock::now();
+		std::unique_ptr<graph::Graph> graph_ptr = grid_square(n);
+		std::chrono::high_resolution_clock::time_point t4 = std::chrono::high_resolution_clock::now();
+		std::chrono::duration<double> time_span3 = std::chrono::duration_cast<std::chrono::duration<double>>(t4 - t3);
+		std::cout << "\t\t-square=" << n << "\ttime=" << time_span3.count() << std::endl;
 
 		//start clock
 		std::chrono::high_resolution_clock::time_point t1 = std::chrono::high_resolution_clock::now();
@@ -85,7 +150,7 @@ int main()
 
 		for (auto& nodes : G1)
 		{
-			//std::cout<<nodes.getID()<<" ";
+			std::cout<<nodes.getID()<<" ";
 		}
 
 	
