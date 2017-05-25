@@ -539,7 +539,7 @@ namespace graph {
 	{
 	public:
 		Edge();
-		Edge(Vertex* source, Vertex* destination, int cost);
+		Edge(Vertex* source, Vertex* destination, int cost, bool directed=true);
 		virtual ~Edge();
 		//Edge(std::size_t destination, int cost = 1);
 
@@ -550,7 +550,7 @@ namespace graph {
 
 		//const Vertex<T>* getSource();
 		//const Vertex<T>* getDestination();
-		int getCost();
+		short getCost() const;
 		void setCost(int cost);
 
 		std::size_t getID();
@@ -558,6 +558,11 @@ namespace graph {
 
 		Vertex* getSource() const;
 		Vertex* getDestination() const;
+
+		bool isDirected() const;
+
+		void setDirected(bool dir);
+
 
 
 	protected:

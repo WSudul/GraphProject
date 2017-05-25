@@ -8,8 +8,8 @@ namespace graph {
 	}
 
 
-	Graph::Edge::Edge(Vertex* source, Vertex* destination, int cost) :
-		source(source), destination(destination), cost(cost), directed(false)
+	Graph::Edge::Edge(Vertex* source, Vertex* destination, int cost, bool directed) :
+		source(source), destination(destination), cost(cost), directed(directed)
 	{
 
 	}
@@ -20,7 +20,7 @@ namespace graph {
 	}
 
 
-	int Graph::Edge::getCost()
+	short Graph::Edge::getCost() const
 	{
 		return this->cost;
 	}
@@ -46,6 +46,16 @@ namespace graph {
 		return destination;
 	}
 
+	inline bool Graph::Edge::isDirected() const
+	{
+		return directed;
+	}
+
+	inline void Graph::Edge::setDirected(bool dir)
+	{
+		this->directed = dir;
+	}
+
 
 
 
@@ -66,19 +76,18 @@ namespace graph {
 		using pairtype = std::pair<const std::size_t, std::unique_ptr<Vertex>>;
 		std::size_t id;
 		auto &it_id = std::max_element(Vertices.begin(), Vertices.end(), [](const pairtype &V1, const pairtype &V2) ->bool {return V1.first < V2.first; });
-		
-		if (it_id != Vertices.end())
-			id = it_id->first;
-		else
-			id = 0;
 
-		id++;
-		auto it = Vertices.insert(std::make_pair(id,std::make_unique<Vertex>(id)));
-		if (it.second)
+		if (it_id != Vertices.end())
 		{
-			//object was inserted
-			//it->second = ; //allocate memory for Vertex return
+			id = it_id->first;
+			id++; 
 		}
+		else
+			id = 0; //when container was empty
+
+		
+		
+		addVertex(id);
 
 		return id; //return unique id ,that will identify this object in future
 	}
@@ -135,18 +144,17 @@ namespace graph {
 		//create new edge and move it to container
 		//std::unique_ptr<Edge> edge(new Edge(fromPtr, toPtr, cost));
 
-
 		//#TODO REWORK THIS, try avoiding explicit new (at least without unique_ptr )
-		Edge * edge = new Edge(fromPtr, toPtr, cost);
+		Edge * edge = new Edge(fromPtr, toPtr, cost,directed);
 		//fromPtr->addOutEdge(edge.get());
 		toPtr->addInEdge(edge);
 		fromPtr->addOutEdge(edge);
 		if (!directed)
 		{
-			//add 2nd edge to represent 2 way edge
-			edge = new Edge(fromPtr, toPtr, cost);
+			//add pointer to edge to  inEdges that is marked as undirected 
+			edge = new Edge(fromPtr, toPtr, cost,directed);
 			fromPtr->addInEdge(edge);
-			toPtr->addOutEdge(edge);
+			//toPtr->addOutEdge(edge);
 		}
 
 
@@ -372,6 +380,13 @@ namespace graph {
 		{
 			return it->get();
 		}
+		else
+		{
+			//search inEdges for undirected connection 
+			auto &it2 = std::find_if(inEdges.begin(), inEdges.end(), 
+				[&to](const Edge* E)->bool {return  !(E->isDirected() ) && E->getSource() == to; }); //looks for UNDIRECTED edge that has Source same as Vertex to.
+
+		}
 
 		return nullptr;
 	}
@@ -405,13 +420,11 @@ namespace graph {
 			this->inEdges.push_back(edge);
 	}
 
-	inline void graph::Graph::Vertex::addOutEdge(Edge * edge)
+	inline void Graph::Vertex::addOutEdge(Edge * edge)
 	{
 		if (edge->getSource() == this)
 		{
-			std::unique_ptr<Edge> e;
-			e.reset(edge);
-			this->outEdges.push_back(std::move(e));
+			this->outEdges.push_back(std::move(std::unique_ptr<Edge>(edge)));
 		}
 	
 			
