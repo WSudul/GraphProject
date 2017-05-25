@@ -226,7 +226,7 @@ namespace graph {
 	
 
 
-			OutEdgeIterator(std::vector<std::unique_ptr<Edge>>::iterator& pos) :
+			OutEdgeIterator(std::vector<std::shared_ptr<Edge>>::iterator& pos) :
 				pos_(pos)
 			{};
 
@@ -269,7 +269,7 @@ namespace graph {
 			}
 
 		private:
-			std::vector<std::unique_ptr<Edge>>::iterator pos_;
+			std::vector<std::shared_ptr<Edge>>::iterator pos_;
 		};
 
 
@@ -289,7 +289,7 @@ namespace graph {
 
 
 
-			InEdgeIterator(std::vector<Edge*>::iterator& pos) :
+			InEdgeIterator(std::vector<std::shared_ptr<Edge>>::iterator& pos) :
 				pos_(pos)
 			{};
 
@@ -325,11 +325,11 @@ namespace graph {
 
 			//#TODO rework operator
 			pointer operator->()  {
-				return *pos_;
+				return pos_->get();
 			}
 
 		private:
-			std::vector<Edge*>::iterator pos_;
+			std::vector<std::shared_ptr<Edge>>::iterator pos_;
 		};
 
 	protected:
@@ -393,7 +393,7 @@ namespace graph {
 		template<typename _Pr>
 		const graph::Graph::Edge*  findOutEdge(const Vertex*  to, _Pr& Pred) const
 		{
-			auto &it = std::find_if(outEdges.begin(), outEdges.end(), [&to, &Pred](const std::unique_ptr<Edge>& E)->bool {return E->getDestination() == to && Pred(E->getCost()); });
+			auto &it = std::find_if(outEdges.begin(), outEdges.end(), [&to, &Pred](const std::shared_ptr<Edge>& E)->bool {return E->getDestination() == to && Pred(E->getCost()); });
 
 			if (it != outEdges.end())
 			{
@@ -417,7 +417,7 @@ namespace graph {
 		const graph::Graph::Edge*  findInEdge(const Vertex*  from, _Pr& Pred) const
 		{
 
-			const auto &it = std::find_if(inEdges.begin(), inEdges.end(), [&from, &Pred](const Edge* E)->bool {return E->getDestination() == from && Pred(E->getCost()); });
+			const auto &it = std::find_if(inEdges.begin(), inEdges.end(), [&from, &Pred](const std::shared_ptr<Edge> E)->bool {return E->getDestination() == from && Pred(E->getCost()); });
 
 
 			if (it != inEdges.end())
@@ -435,14 +435,14 @@ namespace graph {
 		/*!
 			adds inedge to vertex
 		*/
-		void addInEdge(Edge* edge);
+		void addInEdge(const std::shared_ptr<Edge>& edge);
 
 		/*!
 			adds outedge to vertex
 			By design it stores the object as smart pointer.
 			The edge must be dynamically allocated object  
 		*/
-		void addOutEdge(Edge* edge); //#TODO refractor this for passing smart pointer?
+		void addOutEdge(const std::shared_ptr<Edge>& edge); //#TODO refractor this for passing smart pointer?
 
 	
 		/*!
@@ -523,10 +523,10 @@ namespace graph {
 
 
 
-		std::vector<Edge*> inEdges; //list of all edges that are pointing to this node
+		std::vector<std::shared_ptr<Edge>> inEdges; //list of all edges that are pointing to this node
 		//std::vector<Edge*> outEdges; //list of all edges that are pointing from this node
 		
-		std::vector<std::unique_ptr<Edge>> outEdges;
+		std::vector<std::shared_ptr<Edge>> outEdges;
 
 		
 
@@ -565,7 +565,6 @@ namespace graph {
 		Vertex* source;
 		Vertex* destination;
 		bool directed;
-		std::size_t id;
 	};
 
 

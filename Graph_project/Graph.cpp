@@ -31,10 +31,7 @@ namespace graph {
 	}
 
 
-	inline std::size_t Graph::Edge::getID()
-	{
-		return this->id;
-	}
+
 
 	inline Graph::Vertex * Graph::Edge::getSource() const
 	{
@@ -136,15 +133,17 @@ namespace graph {
 		//std::unique_ptr<Edge> edge(new Edge(fromPtr, toPtr, cost));
 
 
-		//#TODO REWORK THIS, try avoiding explicit new (at least without unique_ptr )
-		Edge * edge = new Edge(fromPtr, toPtr, cost);
+		//
+		std::shared_ptr<Edge> edge(new Edge(fromPtr, toPtr, cost));
+		//Edge * edge = new Edge(fromPtr, toPtr, cost);
 		//fromPtr->addOutEdge(edge.get());
 		toPtr->addInEdge(edge);
 		fromPtr->addOutEdge(edge);
 		if (!directed)
 		{
+			//#TODO Rework adding undirected edges into using same Edge but with flag directed used in ctor ->rework all relevant methods
 			//add 2nd edge to represent 2 way edge
-			edge = new Edge(fromPtr, toPtr, cost);
+			edge = std::shared_ptr<Edge>( new Edge(toPtr, fromPtr, cost));
 			fromPtr->addInEdge(edge);
 			toPtr->addOutEdge(edge);
 		}
@@ -180,7 +179,7 @@ namespace graph {
 		{
 			//finds matching edge (O(deg(V)))
 			const Edge*  edgePtr = nullptr;
-			Vertex*  vertexFromPtr = it_from->second.get();
+			Vertex*  vertexFromPtr = it_from->second.get(); //#TODO rethink strategy, currently: findEdge and get raw pointer -> pass raw pointer and find shared_ptr AGAIN. Think about passing smart pointer as temp obj (PROFILE FIRST)
 			Vertex*  vertexToPtr = it_to->second.get();
 			edgePtr = vertexFromPtr->findOutEdge(vertexToPtr);
 
@@ -366,7 +365,7 @@ namespace graph {
 
 	inline const graph::Graph::Edge * Graph::Vertex::findOutEdge(const Vertex * to) const
 	{
-		auto &it = std::find_if(outEdges.begin(), outEdges.end(), [&to](const std::unique_ptr<Edge>& E)->bool {return E->getDestination() == to; });
+		auto &it = std::find_if(outEdges.begin(), outEdges.end(), [&to](const std::shared_ptr<Edge>& E)->bool {return E->getDestination() == to; });
 
 		if (it != outEdges.end())
 		{
@@ -386,12 +385,12 @@ namespace graph {
 	inline const graph::Graph::Edge * Graph::Vertex::findInEdge(const Vertex * from) const
 	{
 
-		const auto &it = std::find_if(inEdges.begin(), inEdges.end(), [&from](const Edge* E)->bool {return E->getDestination() == from; });
+		const auto &it = std::find_if(inEdges.begin(), inEdges.end(), [&from](const std::shared_ptr<Edge> E)->bool {return E->getDestination() == from; });
 
 
 		if (it != inEdges.end())
 		{
-			return *it;
+			return it->get();
 		}
 
 		return nullptr;
@@ -399,19 +398,19 @@ namespace graph {
 
 	
 
-	inline void Graph::Vertex::addInEdge(Edge * edge)
+	inline void Graph::Vertex::addInEdge(const std::shared_ptr<Edge>& edge)
 	{
 		if (edge->getDestination() == this)
-			this->inEdges.push_back(edge);
+			this->inEdges.push_back(std::move(std::shared_ptr<Edge>(edge)));
 	}
 
-	inline void graph::Graph::Vertex::addOutEdge(Edge * edge)
+	inline void Graph::Vertex::addOutEdge(const std::shared_ptr<Edge>& edge)
 	{
 		if (edge->getSource() == this)
 		{
-			std::unique_ptr<Edge> e;
-			e.reset(edge);
-			this->outEdges.push_back(std::move(e));
+			
+			
+			this->outEdges.push_back(std::move(std::shared_ptr<Edge>(edge)));
 		}
 	
 			
@@ -422,10 +421,14 @@ namespace graph {
 	inline void Graph::Vertex::removeInEdge(const  Edge * edge)
 	{
 
+		auto it = (std::find_if(inEdges.begin(), inEdges.end(), [&edge](const std::shared_ptr<Edge>&e)->bool {return edge == e.get(); }));
+
+		if (it != inEdges.end())
+			inEdges.erase(it);
 
 		//remove-erase idiom on vector container
-		inEdges.erase(std::remove(inEdges.begin(), inEdges.end(), edge));
-		int newsize = inEdges.size();
+		//inEdges.erase(std::remove(inEdges.begin(), inEdges.end(), edge));
+		
 
 
 		
@@ -437,7 +440,7 @@ namespace graph {
 
 		//remove-erase idiom behaves wonkly. Exception thrown when edge was NOT in container (reason: probably giving wrong pointer (inEdge pointer)
 
-		auto it=(std::find_if(outEdges.begin(), outEdges.end(), [&edge](const std::unique_ptr<Edge>&e)->bool {return edge == e.get(); }));
+		auto it=(std::find_if(outEdges.begin(), outEdges.end(), [&edge](const std::shared_ptr<Edge>&e)->bool {return edge == e.get(); }));
 		
 		
 		if(it!=outEdges.end())
