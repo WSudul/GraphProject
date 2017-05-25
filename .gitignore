@@ -241,3 +241,5 @@ ModelManifest.xml
 # FAKE - F# Make
 .fake/
 /Graph_project/maptest.txt
+/Graph_project/maptest_uniq_ptr.txt
+/Graph_project/maptest_sharedptr.txt

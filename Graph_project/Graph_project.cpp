@@ -150,7 +150,7 @@ int main()
 	graph_ptr.reset();
 
 	for(int x=0;x<4;++x)
-		for (int n = 0; n < 5000; n += 100)
+		for (int n = 5001; n < 50000; n += 1000)
 		{
 			//start clock
 			std::chrono::high_resolution_clock::time_point t1 = std::chrono::high_resolution_clock::now();
