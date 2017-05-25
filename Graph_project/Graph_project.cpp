@@ -18,13 +18,50 @@ void forceWait(const double val)
 	std::chrono::high_resolution_clock::time_point t1 = std::chrono::high_resolution_clock::now();
 	std::chrono::duration<double> time_span;
 	do {
-
-
-
 		std::chrono::high_resolution_clock::time_point t2 = std::chrono::high_resolution_clock::now();
 		time_span = std::chrono::duration_cast<std::chrono::duration<double>>(t2 - t1);
 	} while (time_span.count() <val);
 }
+
+
+std::unique_ptr<graph::Graph> createGraph(unsigned int v, unsigned int e, const unsigned n,const unsigned x)
+{
+	
+	std::unique_ptr<graph::Graph>  G1(new graph::Graph);
+	
+	v *= n;
+	e *= x;
+
+	for (unsigned int i = 0; i < v; i++)
+	{
+		G1->addVertex(i);
+	}
+
+	for (unsigned int i = 0; i < e*v; i++)
+	{
+		G1->addEdge((i * 2) % v, (i + 2) % v, i%v);
+	}
+
+	return std::move(G1);
+	////remove all edges that meet lambda predicament
+	//for (int i = 0; i < e*v; i++)
+	//{
+	//	G1.removeDirEdge(i%v, (i + 1) % v, [](int cost) ->bool {return cost == 100; });
+	//}
+
+
+	////remove half of vertices
+	//for (int i = 0; i < v / 2; i++)
+	//{
+	//	G1.removeVertex(i);
+	//}
+
+	//for (auto& nodes : G1)
+	//{
+	//	std::cout << nodes.getID() << " ";
+	//}
+}
+
 
 std::unique_ptr<graph::Graph> grid_square(const unsigned int n)
 {
@@ -35,8 +72,8 @@ std::unique_ptr<graph::Graph> grid_square(const unsigned int n)
 		for (unsigned j = 0; j < n; ++j)
 			g->addVertex(i*n + j);
 	}
-	
-	for (unsigned i = 1; i < n-1; ++i)
+	//
+	for (unsigned i = 1; i < n - 1; ++i)
 	{
 		for (unsigned j = 1; j < n - 1; ++j)
 		{
@@ -45,17 +82,17 @@ std::unique_ptr<graph::Graph> grid_square(const unsigned int n)
 			//first set
 			std::size_t pos = i*n + j;
 			g->addEdge(pos + 1, pos);
-			g->addEdge(pos - 1,pos);
-			g->addEdge(pos+n, pos);
-			g->addEdge(pos-n, pos);
+			g->addEdge(pos - 1, pos);
+			g->addEdge(pos + n, pos);
+			g->addEdge(pos - n, pos);
 
 			//returning edges
-			g->addEdge(pos,pos + 1);
-			g->addEdge(pos,pos - 1);
-			g->addEdge(pos,pos + n);
-			g->addEdge(pos,pos - n);
+			g->addEdge(pos, pos + 1);
+			g->addEdge(pos, pos - 1);
+			g->addEdge(pos, pos + n);
+			g->addEdge(pos, pos - n);
 		}
-
+	}
 		//border edges
 		for (unsigned i = 0; i < n ; ++i)
 		{
@@ -80,7 +117,7 @@ std::unique_ptr<graph::Graph> grid_square(const unsigned int n)
 
 		};
 
-	}
+	
 
 	return std::move(g);
 }
@@ -91,74 +128,45 @@ int main()
 	std::ofstream file;
 	file.open("maptest.txt");
 
-	for (int x = 1; x < 4; x++)
-	for (int n = 1; n < 12;n+=10)
-	{
-		int v = 10;
-		int e = 4;
-		graph::Graph G1;
-		v *= n;
-		e *= x;
-		
-		graph::Graph* g2= new DataGraph<int>;
-		graph::Graph* g3= new DataGraph<float>;
-
-		g2->addVertex(1);
-		g2->addVertex(2);
 
 		
+	graph::Graph* g2= new DataGraph<int>;
+	graph::Graph* g3= new DataGraph<float>;
 
-		std::vector<graph::Graph*> gvec;
-		gvec.push_back(g2);
-		gvec.push_back(g3);
+	delete g2;
+	delete g3;
 
-		delete g2;
-		delete g3;
+	const unsigned a = 1000;
+	//create a square net of vertices
+	std::chrono::high_resolution_clock::time_point t3 = std::chrono::high_resolution_clock::now();
 
-		//create a square net of vertices
-		std::chrono::high_resolution_clock::time_point t3 = std::chrono::high_resolution_clock::now();
-		std::unique_ptr<graph::Graph> graph_ptr = grid_square(n);
-		std::chrono::high_resolution_clock::time_point t4 = std::chrono::high_resolution_clock::now();
-		std::chrono::duration<double> time_span3 = std::chrono::duration_cast<std::chrono::duration<double>>(t4 - t3);
-		std::cout << "\t\t-square=" << n << "\ttime=" << time_span3.count() << std::endl;
+	std::unique_ptr<graph::Graph> graph_ptr = grid_square(a);
 
-		//start clock
-		std::chrono::high_resolution_clock::time_point t1 = std::chrono::high_resolution_clock::now();
-		for (int i = 0; i < v; i++)
+	std::chrono::high_resolution_clock::time_point t4 = std::chrono::high_resolution_clock::now();
+
+	std::chrono::duration<double> time_span3 = std::chrono::duration_cast<std::chrono::duration<double>>(t4 - t3);
+	std::cout << "\t\t-square=" << a*a << "\ttime=" << time_span3.count() << std::endl;
+	std::cout << "\t\t-edges=" << graph_ptr->edgeCount() << "\tt-vertices=" << graph_ptr->vertexCount()<< std::endl;
+	graph_ptr.reset();
+
+	for(int x=0;x<4;++x)
+		for (int n = 0; n < 5000; n += 100)
 		{
-			G1.addVertex(i);
-		}
+			//start clock
+			std::chrono::high_resolution_clock::time_point t1 = std::chrono::high_resolution_clock::now();
 
-		for (int i = 0; i < e*v; i++)
-		{
-			G1.addEdge((i*2)%v, (i+2)%v,i%v);
-		}
+			std::unique_ptr<graph::Graph> graph_ptr = createGraph(10, 4, n, x);
 
-		//remove all edges that meet lambda predicament
-		for (int i = 0; i < e*v; i++)
-		{
-			G1.removeDirEdge(i%v, (i + 1) % v, [](int cost) ->bool {return cost == 100; }); 
-		}
+			std::chrono::high_resolution_clock::time_point t2 = std::chrono::high_resolution_clock::now();
+				
+			//get duration
+			std::chrono::duration<double> time_span = std::chrono::duration_cast<std::chrono::duration<double>>(t2 - t1);
+			std::cout << "vertices total= " << n*10<< "\tedges per vertice= " << 4*x << "time= " << time_span.count() << std::endl;
+			file << n * 10 << "\t" << 4 * x << "\t" << time_span.count() << "\n";
 
-		
-
-		//remove half of vertices
-		for (int i = 0; i < v/2; i++)
-		{
-			G1.removeVertex(i);
-		}
-
-		for (auto& nodes : G1)
-		{
-			std::cout<<nodes.getID()<<" ";
-		}
-
+			
 	
-		std::chrono::high_resolution_clock::time_point t2 = std::chrono::high_resolution_clock::now();
-		std::chrono::duration<double> time_span = std::chrono::duration_cast<std::chrono::duration<double>>(t2-t1);
-	
-		std::cout <<"vertices total= "<< v <<"\tedges per vertice= "<<e<<"time= " << time_span.count() << std::endl;
-		file << v << "\t" <<e<<"\t"<< time_span.count() << "\n";
+		
 
 
 
