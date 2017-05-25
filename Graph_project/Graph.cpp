@@ -264,25 +264,13 @@ namespace graph {
 	}
 
 
-	inline std::size_t Graph::edgeCount()
+	std::size_t Graph::edgeCount()
 	{
 		std::size_t count = 0;
 
-		/*for (auto  &ent1 : Vertices)
-		{
-		auto  &key = ent1.first;
-		auto  &val = ent1.second;
-		count += val.countEdges();
-		}
-		return count;*/
-
-
 		for (auto &it : Vertices)
-		{
-
 			count += it.second->countEdges();
 
-		}
 		return count;
 
 	}
@@ -342,7 +330,7 @@ namespace graph {
 		return *(std::move(std::unique_ptr<GraphIterator>(new GraphIterator(Vertices.end()))));
 	}
 
-	inline std::size_t Graph::vertexCount()
+	std::size_t Graph::vertexCount()
 	{
 		return Vertices.size();
 
