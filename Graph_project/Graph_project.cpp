@@ -66,6 +66,10 @@ std::unique_ptr<graph::Graph> createGraph(unsigned int v, unsigned int e, const 
 std::unique_ptr<graph::Graph> grid_square(const unsigned int n)
 {
 	std::unique_ptr<graph::Graph> g(new graph::Graph);
+	if (n == 0)
+	{
+		return std::move(g);
+	}
 
 	for (unsigned i = 0; i < n; ++i)
 	{
@@ -136,7 +140,7 @@ int main()
 	delete g2;
 	delete g3;
 
-	const unsigned a = 1000;
+	const unsigned a = 2;
 	//create a square net of vertices
 	std::chrono::high_resolution_clock::time_point t3 = std::chrono::high_resolution_clock::now();
 
@@ -149,8 +153,8 @@ int main()
 	std::cout << "\t\t-edges=" << graph_ptr->edgeCount() << "\tt-vertices=" << graph_ptr->vertexCount()<< std::endl;
 	graph_ptr.reset();
 
-	for(int x=0;x<4;++x)
-		for (int n = 1; n < 50000; n += 1000)
+	for(int x=1;x<2;++x)
+		for (int n = 1; n < 2; n += 1)
 		{
 			//start clock
 			std::chrono::high_resolution_clock::time_point t1 = std::chrono::high_resolution_clock::now();
@@ -164,7 +168,11 @@ int main()
 			std::cout << "vertices total= " << n*10<< "\tedges per vertice= " << 4*x << "time= " << time_span.count() << std::endl;
 			file << n * 10 << "\t" << 4 * x << "\t" << time_span.count() << "\n";
 
-			
+
+			graph_ptr->removeDirEdge(0, 2);
+			graph_ptr->removeDirEdge(1, 2);
+
+			std::cout<<graph_ptr->edgeCount();
 	
 		
 
@@ -172,10 +180,7 @@ int main()
 
 
 	}
-	//G1.addEdge(1, 2, 10);
-	//G1.addVertex();
-	//G1.addEdge(1, 3, 22);
-	//std::vector<std::string> vec=G1.verticesToString();
+	
 
 	////for (const auto &it : vec)
 	//	//std::cout << it << std::endl;
@@ -187,18 +192,7 @@ int main()
 	////for (const auto &it : vec)
 	//	//std::cout << it << std::endl;
 
-	{
-		std::chrono::high_resolution_clock::time_point t1 = std::chrono::high_resolution_clock::now();
-		std::chrono::duration<double> time_span;
-		do {
 
-
-
-			std::chrono::high_resolution_clock::time_point t2 = std::chrono::high_resolution_clock::now();
-			time_span = std::chrono::duration_cast<std::chrono::duration<double>>(t2 - t1);
-		} while (time_span.count() < 0.00);
-
-	}
 	_CrtDumpMemoryLeaks();
 
 
