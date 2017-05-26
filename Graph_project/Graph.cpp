@@ -113,16 +113,11 @@ namespace graph {
 	{
 		auto &it_from = Vertices.find(from);
 		auto &it_to = Vertices.find(to);
-		if (it_from == Vertices.end())
+		if (it_from == Vertices.end() || it_to==Vertices.end())
 		{
-			//Node does not exist
+			//missing Vertex/Vertices
 			return;
-		}
-
-		if (it_to == Vertices.end())
-		{
-			//Node does not exist
-			return;
+			
 		}
 		Vertex* fromPtr=nullptr;
 		Vertex* toPtr=nullptr;
@@ -141,19 +136,20 @@ namespace graph {
 		
 
 
-		//create new edge and move it to container
-		//std::unique_ptr<Edge> edge(new Edge(fromPtr, toPtr, cost));
 
-		//#TODO REWORK THIS, try avoiding explicit new (at least without unique_ptr )
+		//#TODO REWORK THIS, try avoiding explicit new (at least without unique_ptr ) - create factory for various edges?
 		Edge * edge = new Edge(fromPtr, toPtr, cost,directed);
-		//fromPtr->addOutEdge(edge.get());
+		
+		//OutEdge is a sole owner of the edge. InEdge will store pointer
+		//Undirected edges can be found by iterating over inEdges container.
+
 		toPtr->addInEdge(edge);
-		fromPtr->addOutEdge(edge);
+		fromPtr->addOutEdge(edge); //this will keep the ownership of edge
 		if (!directed)
 		{
 			//add pointer to edge to  inEdges that is marked as undirected 
-			edge = new Edge(fromPtr, toPtr, cost,directed);
-			fromPtr->addInEdge(edge);
+								//edge = new Edge(fromPtr, toPtr, cost,directed);
+			//fromPtr->addInEdge(edge);
 			//toPtr->addOutEdge(edge);
 		}
 
@@ -191,9 +187,11 @@ namespace graph {
 			Vertex*  vertexFromPtr = it_from->second.get();
 			Vertex*  vertexToPtr = it_to->second.get();
 			edgePtr = vertexFromPtr->findOutEdge(vertexToPtr);
-
-			it_to->second->removeInEdge( edgePtr); //remove pointer to edge from receiving vertex
-			it_from->second->removeOutEdge(edgePtr); //remove the edge itself
+			if (edgePtr != nullptr) 
+			{
+				it_to->second->removeInEdge(edgePtr); //remove pointer to edge from receiving vertex
+				it_from->second->removeOutEdge(edgePtr); //remove the edge itself
+			}
 		}
 
 
@@ -438,10 +436,7 @@ namespace graph {
 
 		//remove-erase idiom on vector container
 		inEdges.erase(std::remove(inEdges.begin(), inEdges.end(), edge));
-		int newsize = inEdges.size();
-
-
-		
+				
 		return;
 	}
 
