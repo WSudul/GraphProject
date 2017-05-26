@@ -86,11 +86,16 @@ namespace graph {
 				const Edge*  edgePtr = nullptr;
 				Vertex*  vertexFromPtr = it_from->second.get();
 				Vertex*  vertexToPtr = it_to->second.get();
+				//looks for the edge in outEdges (for directed) and then in inEdges (for undirected)
 				edgePtr = vertexFromPtr->findOutEdge(vertexToPtr,Pred);
+
 				if (edgePtr != nullptr)
 				{
+					
 					it_to->second->removeInEdge(edgePtr); //remove pointer to edge from receiving vertex
 					it_from->second->removeOutEdge(edgePtr); //remove the edge itself
+					
+
 				}
 			}
 
@@ -393,11 +398,18 @@ namespace graph {
 		template<typename _Pr>
 		const graph::Graph::Edge*  findOutEdge(const Vertex*  to, _Pr& Pred) const
 		{
-			auto &it = std::find_if(outEdges.begin(), outEdges.end(), [&to, &Pred](const std::unique_ptr<Edge>& E)->bool {return E->getDestination() == to && Pred(E->getCost()); });
+			auto &it = std::find_if(outEdges.begin(), outEdges.end(), 
+				[&to, &Pred](const std::unique_ptr<Edge>& E)->bool {return E->getDestination() == to && Pred(E->getCost()); });
 
 			if (it != outEdges.end())
 			{
 				return it->get();
+			}
+			else
+			{
+				auto &it = std::find_if(inEdges.begin(), inEdges.end(),
+					[&to, &Pred](const Edge* E)->bool {return E->getSource() == to && Pred(E->getCost()); });
+
 			}
 
 			return nullptr;
@@ -417,7 +429,8 @@ namespace graph {
 		const graph::Graph::Edge*  findInEdge(const Vertex*  from, _Pr& Pred) const
 		{
 
-			const auto &it = std::find_if(inEdges.begin(), inEdges.end(), [&from, &Pred](const Edge* E)->bool {return E->getDestination() == from && Pred(E->getCost()); });
+			const auto &it = std::find_if(inEdges.begin(), inEdges.end(),
+				[&from, &Pred](const Edge* E)->bool {return E->getDestination() == from && Pred(E->getCost()); });
 
 
 			if (it != inEdges.end())
