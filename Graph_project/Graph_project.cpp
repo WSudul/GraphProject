@@ -63,66 +63,45 @@ std::unique_ptr<graph::Graph> createGraph(unsigned int v, unsigned int e, const 
 }
 
 
+//creates n x n grid containing n^2 edges that each is connected by undirected edge to create a grid
 std::unique_ptr<graph::Graph> grid_square(const unsigned int n)
 {
 	std::unique_ptr<graph::Graph> g(new graph::Graph);
-	if (n == 0)
+
+
+	for (unsigned i = 0; i < n*n; ++i)
+	{
+			g->addVertex(i);
+	}
+
+	if (n < 2) //simple fix for edge case when there is nothing to connect + avoid overlapping with unsigned counters
 	{
 		return std::move(g);
 	}
 
-	for (unsigned i = 0; i < n; ++i)
+
+	for (unsigned i = 0; i < n-1; ++i)
 	{
-		for (unsigned j = 0; j < n; ++j)
-			g->addVertex(i*n + j);
-	}
-	//
-	for (unsigned i = 1; i < n - 1; ++i)
-	{
-		for (unsigned j = 1; j < n - 1; ++j)
+		for (unsigned j = 0; j < n -1; ++j)
 		{
-			//add edges
+			//first set - going up and right
+			std::size_t pos = i*(n) + j;
+			g->addEdge(pos , pos+1, 1,false);
 
-			//first set
-			std::size_t pos = i*n + j;
-			g->addEdge(pos + 1, pos);
-			g->addEdge(pos - 1, pos);
-			g->addEdge(pos + n, pos);
-			g->addEdge(pos - n, pos);
-
-			//returning edges
-			g->addEdge(pos, pos + 1);
-			g->addEdge(pos, pos - 1);
-			g->addEdge(pos, pos + n);
-			g->addEdge(pos, pos - n);
+			g->addEdge(pos , pos+n, 1, false);
 		}
+
+		//top edge going right, i=0 i<n-1
+		g->addEdge(n*(n - 1) + i, n*(n - 1) + 1 + i);
+
 	}
-		//border edges
-		for (unsigned i = 0; i < n ; ++i)
-		{
-			std::size_t pos;
-			//bottom border
-			g->addEdge(i, i + n);
-			g->addEdge(i + n, i);
 
-			//top border
-			g->addEdge((n - 1)*n + i, (n - 2)*n + i);
-			g->addEdge((n - 2)*n + i, (n - 1)*n + i);
-
-			//left border
-			pos = n*i;
-			g->addEdge(pos, (pos + 1));
-			g->addEdge((pos + 1), pos);
-
-			//right border
-			pos = (n - 1) + n*i;
-			g->addEdge(pos, pos - 1);
-			g->addEdge(pos - 1, pos);
-
-		};
-
+	for(unsigned i=1;i<n;++i)
+	{
+		//right edge going up
+		g->addEdge((i*n - 1), (i*n) + n - 1);
+	}
 	
-
 	return std::move(g);
 }
 
@@ -140,7 +119,7 @@ int main()
 	delete g2;
 	delete g3;
 
-	const unsigned a = 2;
+	const unsigned a = 1000;
 	//create a square net of vertices
 	std::chrono::high_resolution_clock::time_point t3 = std::chrono::high_resolution_clock::now();
 
@@ -151,9 +130,9 @@ int main()
 	std::chrono::duration<double> time_span3 = std::chrono::duration_cast<std::chrono::duration<double>>(t4 - t3);
 	std::cout << "\t\t-square=" << a*a << "\ttime=" << time_span3.count() << std::endl;
 	std::cout << "\t\t-edges=" << graph_ptr->edgeCount() << "\tt-vertices=" << graph_ptr->vertexCount()<< std::endl;
-	graph_ptr.reset();
+	//graph_ptr.reset();
 
-	for(int x=1;x<2;++x)
+	for(int x=1;x<1;++x)
 		for (int n = 1; n < 2; n += 1)
 		{
 			//start clock
@@ -182,6 +161,14 @@ int main()
 	}
 	
 
+	/*std::cout << graph_ptr->edgeCount() << "\t" << graph_ptr->vertexCount() << std::endl;
+	
+	std::vector<std::string> vec = graph_ptr->verticesToString();
+	for(auto it:vec)
+		std::cout <<it << std::endl;
+	*/
+	
+	
 	////for (const auto &it : vec)
 	//	//std::cout << it << std::endl;
 
@@ -192,7 +179,7 @@ int main()
 	////for (const auto &it : vec)
 	//	//std::cout << it << std::endl;
 
-
+	graph_ptr.reset();
 	_CrtDumpMemoryLeaks();
 
 
