@@ -366,13 +366,16 @@ namespace graph {
 
 	std::size_t Graph::Vertex::countEdges()
 	{
-		return outEdges.size();
+		//count number of outEdges (directed and undirected)
+		return (outEdges.size());
+			//+ std::count_if(inEdges.begin(), inEdges.end(), [](const Edge* e)-> bool {return e->isDirected(); }));
 	}
 
 
 	inline const graph::Graph::Edge * Graph::Vertex::findOutEdge(const Vertex * to) const
 	{
-		auto &it = std::find_if(outEdges.begin(), outEdges.end(), [&to](const std::unique_ptr<Edge>& E)->bool {return E->getDestination() == to; });
+		auto &it = std::find_if(outEdges.begin(), outEdges.end(), 
+			[&to](const std::unique_ptr<Edge>& E)->bool {return E->getDestination() == to; });
 
 		if (it != outEdges.end())
 		{

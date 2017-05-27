@@ -501,7 +501,8 @@ namespace graph {
 		*/
 		InEdgeIterator begin_inEdge() 
 		{
-			return *(std::move(std::unique_ptr<InEdgeIterator>(new InEdgeIterator(inEdges.begin()))));
+			//return *(std::move(std::unique_ptr<InEdgeIterator>(new InEdgeIterator(inEdges.begin()))));
+			return InEdgeIterator(inEdges.begin());
 		};
 
 		/*!
@@ -510,7 +511,8 @@ namespace graph {
 		*/
 		InEdgeIterator end_inEdge() 
 		{
-			return *(std::move(std::unique_ptr<InEdgeIterator>(new InEdgeIterator(inEdges.end()))));
+			//return *(std::move(std::unique_ptr<InEdgeIterator>(new InEdgeIterator(inEdges.end()))));
+			InEdgeIterator(inEdges.end());
 		}
 
 
