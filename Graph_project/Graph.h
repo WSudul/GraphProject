@@ -35,6 +35,8 @@ namespace graph {
 		class OutEdgeIterator;
 		class InEdgeIterator;
 
+		//class representing a traversible path between 2 Vertices
+		class Path;
 
 		/*!
 			add a Vertex by automatically assigning next free ID after current max ID
@@ -137,8 +139,25 @@ namespace graph {
 		std::vector<std::string> edgesToString();
 
 
+		/*!
+			returns true whether a traversible path exists from vert1 to ver2
+		
+		*/
+		bool traversible(std::size_t vert1, std::size_t ver2);
+
+		/*!
+			returns true if all 
+		*/
+
+
+		/*!
+			returns iterator to the first element of the OutEdge container
+		*/
 		GraphIterator begin();
 
+		/*!
+			returns iterator to one past the last element of the OutEdge container
+		*/
 		GraphIterator end();
 
 	protected:
@@ -340,6 +359,56 @@ namespace graph {
 		private:
 			std::vector<Edge*>::iterator pos_;
 		};
+
+		template<typename T>
+		class Path
+		{
+		public:
+			Path() :
+				two_way(false), tot_cost(0)
+			{
+
+			};
+			virtual ~Path() {};
+
+
+			virtual std::size_t getTotalCost()
+			{
+				return tot_cost;
+			};
+
+			virtual bool isTwoWay()
+			{
+				return two_way;
+			};
+
+			virtual void push_front(T& el){
+				path.push_front(el);
+			}
+
+			virtual void push_back(T& el){
+				path.push_back(el);
+				
+			}
+
+			virtual void pop_back() {
+				path.pop_back();
+			};
+
+			virtual vod pop_front() {
+				path.pop_front();
+			};
+
+			private:
+
+
+
+				std::list<T> path;
+				bool two_way;
+				std::size_t tot_cost;
+			
+		};
+
 
 
 		/*!
