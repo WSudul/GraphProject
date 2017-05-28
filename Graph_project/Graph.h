@@ -450,14 +450,14 @@ namespace graph {
 		/*!
 			adds inedge to vertex
 		*/
-		void addInEdge(Edge* edge);
+		void addInEdge(std::unique_ptr<Edge> edge);
 
 		/*!
 			adds outedge to vertex
 			By design it stores the object as smart pointer.
 			The edge must be dynamically allocated object  
 		*/
-		void addOutEdge(Edge* edge); //#TODO refractor this for passing smart pointer?
+		void addOutEdge(std::unique_ptr<Edge> edge); //#TODO refractor this for passing smart pointer?
 
 	
 		/*!
@@ -558,6 +558,10 @@ namespace graph {
 		*/
 		void removeInEdgeOnly(const Edge* edge);
 
+
+		void addInEdgeOnly(Edge* edge);
+
+		void addOutEdgeOnly(std::unique_ptr<Edge> edge);
 
 
 	};

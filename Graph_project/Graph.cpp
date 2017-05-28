@@ -138,20 +138,13 @@ namespace graph {
 
 
 		//#TODO REWORK THIS, try avoiding explicit new (at least without unique_ptr ) - create factory for various edges?
-		Edge * edge = new Edge(fromPtr, toPtr, cost,directed);
+		std::unique_ptr<Edge> edge = std::make_unique<Edge>(fromPtr, toPtr, cost, directed);
 		
 		//OutEdge is a sole owner of the edge. InEdge will store pointer
 		//Undirected edges can be found by iterating over inEdges container.
 
-		toPtr->addInEdge(edge);
-		fromPtr->addOutEdge(edge); //this will keep the ownership of edge
-		if (!directed)
-		{
-			//add pointer to edge to  inEdges that is marked as undirected 
-								//edge = new Edge(fromPtr, toPtr, cost,directed);
-			//fromPtr->addInEdge(edge);
-			//toPtr->addOutEdge(edge);
-		}
+		//needs to be called only once!
+		fromPtr->addOutEdge(std::move(edge)); 
 
 
 
@@ -415,17 +408,43 @@ namespace graph {
 
 	
 
-	inline void Graph::Vertex::addInEdge(Edge * edge)
+	inline void Graph::Vertex::addInEdge(std::unique_ptr<Edge> edge)
 	{
 		if (edge->getDestination() == this)
-			this->inEdges.push_back(edge);
+		{
+			auto src = edge->getSource();
+			if (src != nullptr)
+			{
+				this->addInEdgeOnly(edge.get());
+
+				src->addOutEdgeOnly(std::move(edge));
+				
+				
+			}
+
+		}
 	}
 
-	inline void Graph::Vertex::addOutEdge(Edge * edge)
+	inline void Graph::Vertex::addOutEdge(std::unique_ptr<Edge> edge)
 	{
 		if (edge->getSource() == this)
 		{
-			this->outEdges.push_back(std::move(std::unique_ptr<Edge>(edge)));
+			
+			auto dest = edge->getDestination();
+			if (dest != nullptr)
+			{
+
+				dest->addInEdgeOnly(edge.get());
+
+				this->addOutEdgeOnly(std::move(edge));
+
+				
+			}
+
+			
+
+			
+
 		}
 	
 			
@@ -491,6 +510,20 @@ namespace graph {
 	{
 		//remove-erase idiom on vector container
 		inEdges.erase(std::remove(inEdges.begin(), inEdges.end(), edge));
+	}
+
+	void Graph::Vertex::addInEdgeOnly(Edge * edge)
+	{
+		if (edge->getDestination() == this)
+			this->inEdges.push_back(edge);
+	}
+
+	void Graph::Vertex::addOutEdgeOnly(std::unique_ptr<Edge> edge)
+	{
+		if (edge->getSource() == this)
+		{
+			this->outEdges.push_back(std::move(edge));
+		}
 	}
 
 }
