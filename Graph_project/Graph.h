@@ -395,35 +395,51 @@ namespace graph {
 
 
 		/*!
-			Template method for findind outedge
+			returns const pointer to first edge , connecting from Vertex and this Vertex,
+			that starts at from Vertex or starts at this Vertex and is undirected
+		*/
+		const graph::Graph::Edge*  findEdgeFrom(const Vertex*  from) const;
+
+
+
+		/*!
+			Template method for finding  outEdge
 			returns const pointer to outedge that starts at from Vertex that meets the predicament
 		*/
 		template<typename _Pr>
 		const graph::Graph::Edge*  findOutEdge(const Vertex*  to, _Pr& Pred) const
 		{
-			auto &it = std::find_if(outEdges.begin(), outEdges.end(), 
-				[&to, &Pred](const std::unique_ptr<Edge>& E)->bool {return E->getDestination() == to && Pred(E->getCost()); });
+			auto &it = std::find_if(outEdges.begin(), outEdges.end(),
+				[&to, &Pred](const std::unique_ptr<Edge>& E)->bool {return E->getDestination() == to && Pred(E); });
 
 			if (it != outEdges.end())
 			{
 				return it->get();
 			}
-			else
-			{
-				auto &it = std::find_if(inEdges.begin(), inEdges.end(),
-					[&to, &Pred](const Edge* E)->bool {return E->getSource() == to && Pred(E->getCost()); });
 
-			}
 
 			return nullptr;
 		}
 
 
 		/*!
-			returns const pointer to first edge , connecting from Vertex and this Vertex,
-			that starts at from Vertex or starts at this Vertex and is undirected
+			Template method for finding  outEdge
+			returns const pointer to outedge that starts at from Vertex that meets the predicament
+			Pred1 compares std::unique_ptr<Edge> with defined predicament.
+			Pred2 looks specifically at the cost of Edge and thus compares Edge's cost to Pred1.  Default Pred2 always yields true
+			Returns const pointer to outedge that starts at from Vertex that meets the predicaments
 		*/
-		const graph::Graph::Edge*  findEdgeFrom(const Vertex*  from) const;
+		template<typename _Pr1, typename _Pr2>
+		const graph::Graph::Edge*  findOutEdge(const Vertex*  to, _Pr1& Pred1, _Pr2& Pred2 = [] {return true; }) const
+		{
+			auto &it = std::find_if(outEdges.begin(), outEdges.end(),
+				[&to, &Pred1, &Pred2](const std::unique_ptr<Edge>& E)->bool {return E->getDestination() == to  && Pred1(E) && Pred2(E->getCost); });
+
+			if (it != outEdges.end())
+				return it->get();
+
+			return nullptr;
+		}
 
 
 		/*!
@@ -434,18 +450,43 @@ namespace graph {
 		{
 
 			const auto &it = std::find_if(inEdges.begin(), inEdges.end(),
-				[&from, &Pred](const Edge* E)->bool {return E->getDestination() == from && Pred(E->getCost()); });
-
+				[&from, &Pred](const Edge* E)->bool {return E->getSource() == from && Pred(E); });
 
 			if (it != inEdges.end())
-			{
 				return *it;
-			}
 
 			return nullptr;
 		}
 
+		/*!
+			Template method for finding  outEdge
+			returns const pointer to outedge that starts at from Vertex that meets the predicament
+			Pred1 compares Edge* with defined predicament.
+			Pred1 looks specifically at the cost of Edge and thus compares Edge's cost to Pred2.  Default Pred2 always yields true
+			Returns const pointer to outedge that starts at from Vertex that meets the predicaments
+		*/
+		template<typename _Pr1, typename _Pr2>
+		const graph::Graph::Edge*  findInEdge(const Vertex*  to, _Pr1& Pred1, _Pr2& Pred2 = [] {return true; }) const
+		{
+			auto &it = std::find_if(inEdges.begin(), inEdges.end(),
+				[&to, &Pred1, &Pred2](const Edge* E)->bool {return E->getSource() == to && Pred1(E) && Pred2(E->getCost) ; });
+
+			if (it != outEdges.end())
+				return it->get();
+
+			return nullptr;
+		}
+
+
+		const graph::Graph::Edge* findOutEdge(const Vertex * to) const;
+
+
+		const graph::Graph::Edge* findInEdge(const Vertex * from) const;
+
 		
+
+
+
 		virtual void setData() {};
 		virtual std::size_t getData() { return std::size_t(); }
 
@@ -556,8 +597,8 @@ namespace graph {
 			return (this->cost == rhs.cost && this->source == rhs.source && this->destination == rhs.source);
 		}
 
-		//const Vertex<T>* getSource();
-		//const Vertex<T>* getDestination();
+		//#TODO move definition to header file (fixing unresolved ext symbol for inlined functions when callig in main() )
+
 		short getCost() const;
 		void setCost(int cost);
 

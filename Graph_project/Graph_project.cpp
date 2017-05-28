@@ -119,7 +119,7 @@ int main()
 	delete g2;
 	delete g3;
 
-	const unsigned a = 1000;
+	const unsigned a = 3;
 	//create a square net of vertices
 	std::chrono::high_resolution_clock::time_point t3 = std::chrono::high_resolution_clock::now();
 
@@ -167,18 +167,23 @@ int main()
 	for(auto it:vec)
 		std::cout <<it << std::endl;
 	*/
+
+	graph_ptr->removeVertex(1);
+	std::cout << "removed vert1";
+	graph_ptr->removeVertex(0);
 	
 	for (auto &it : *graph_ptr.get())
 	{
 
-		auto edge = (it.findEdgeTo(&it));
+		auto edge = (it.findOutEdge(&it));
 		if (edge != nullptr)
 			std::cout << "loop edge=" << edge->getDestination() << std::endl;
 
 		auto outEdge_it = it.begin_outEdge();
 		
-		
-		
+		//it.findInEdge(it, [](const int cost)->bool {return cost == 100; });
+		//it.findOutEdge(it, [](short cost) ->bool {return cost == 100; });
+		// [](const int cost)->bool {return cost == 100; }
 
 		for (auto it2 : it)
 		{
@@ -188,6 +193,11 @@ int main()
 		}
 
 		auto inEdge_it = it.begin_inEdge();
+		//inEdge_it->isDirected();
+		inEdge_it->getCost();
+		inEdge_it->getDestination();
+		inEdge_it->getSource();
+		inEdge_it->getID();
 		inEdge_it->isDirected();
 		if (inEdge_it != it.end_inEdge() && ++inEdge_it != it.end_inEdge())
 		{
