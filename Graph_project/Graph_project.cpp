@@ -175,11 +175,12 @@ int main()
 	for (auto &it : *graph_ptr.get())
 	{
 
+		std::cout << it.getID() << "\tout of:" << graph_ptr->vertexCount() << std::endl;
 		auto edge = (it.findOutEdge(&it));
 		if (edge != nullptr)
 			std::cout << "loop edge=" << edge->getDestination() << std::endl;
 
-		auto outEdge_it = it.begin_outEdge();
+		//auto outEdge_it = it.begin_outEdge();
 		
 		//it.findInEdge(it, [](const int cost)->bool {return cost == 100; });
 		//it.findOutEdge(it, [](short cost) ->bool {return cost == 100; });
@@ -194,17 +195,15 @@ int main()
 
 		auto inEdge_it = it.begin_inEdge();
 		//inEdge_it->isDirected();
-		inEdge_it->getCost();
-		inEdge_it->getDestination();
-		inEdge_it->getSource();
-		inEdge_it->getID();
-		inEdge_it->isDirected();
-		if (inEdge_it != it.end_inEdge() && ++inEdge_it != it.end_inEdge())
+		if (inEdge_it != it.end_inEdge())
 		{
-			std::cout << it.countEdges();
-			it.removeInEdge(&*inEdge_it);
-			std::cout << "\t" <<it.countEdges() << std::endl;;
+			std::cout << inEdge_it->getCost() << "\t" <<
+				inEdge_it->getDestination() << "\t" <<
+				inEdge_it->getSource() << "\t" <<
+				inEdge_it->getID() << "\t" <<
+				inEdge_it->isDirected() << "\n";
 		}
+	
 	}
 
 

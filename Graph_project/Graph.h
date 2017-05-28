@@ -167,7 +167,7 @@ namespace graph {
 			using	pointer = Vertex*;
 			using	reference = Vertex&;
 			/*using	const_reference		= const Edge&;*/
-			using	iterator_category = std::forward_iterator_tag;
+			using	iterator_category = std::bidirectional_iterator_tag;
 
 
 
@@ -191,6 +191,7 @@ namespace graph {
 			GraphIterator& operator=(const GraphIterator& rhs)
 			{
 				this->pos_ = rhs.pos_;
+				return *this;
 			}
 
 
@@ -228,7 +229,7 @@ namespace graph {
 			using	pointer				=  Edge*;
 			using	reference			=  Edge& ;
 			/*using	const_reference		=  Edge&;*/
-			using	iterator_category = std::forward_iterator_tag;
+			using	iterator_category = std::bidirectional_iterator_tag;
 	
 
 
@@ -255,6 +256,7 @@ namespace graph {
 			OutEdgeIterator& operator=(const OutEdgeIterator& rhs)
 			{
 				this->pos_ = rhs.pos_;
+				return *this;
 			}
 
 
@@ -275,7 +277,7 @@ namespace graph {
 			}
 
 		private:
-			std::vector<std::unique_ptr<Edge>>::const_iterator pos_;
+			std::vector<std::unique_ptr<Edge>>::iterator pos_;
 		};
 
 
@@ -291,7 +293,7 @@ namespace graph {
 			using	pointer =   Edge*;
 			using	reference =  Edge&;
 			/*using	const_reference		= const Edge&;*/
-			using	iterator_category = std::forward_iterator_tag;
+			using	iterator_category = std::bidirectional_iterator_tag;
 
 
 
@@ -318,6 +320,7 @@ namespace graph {
 			InEdgeIterator& operator=(const InEdgeIterator& rhs)
 			{
 				this->pos_ = rhs.pos_;
+				return *this;
 			}
 			InEdgeIterator& operator ++() { ++pos_; return *this; }
 			InEdgeIterator operator++ (int) { /*make assertions*/ InEdgeIterator tmp(*this); ++pos_ ; return tmp; }
@@ -335,7 +338,7 @@ namespace graph {
 			}
 
 		private:
-			std::vector<Edge*>::const_iterator pos_;
+			std::vector<Edge*>::iterator pos_;
 		};
 
 

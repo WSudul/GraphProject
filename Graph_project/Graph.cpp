@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include "Graph.h"
-
+#include <iostream>
 namespace graph {
 
 	Graph::Edge::Edge()
@@ -16,7 +16,7 @@ namespace graph {
 
 	Graph::Edge::~Edge()
 	{
-		//std::cout << "Edge dtor!" << std::endl;
+		std::cout << "Edge dtor!" << std::endl;
 	}
 
 	short Graph::Edge::getCost() const
@@ -190,15 +190,22 @@ namespace graph {
 		if (it != Vertices.end())
 		{
 			//remove the vertex
-
 			auto& val = it->second;
-
+			
+			
+			OutEdgeIterator edge_it = val->begin_outEdge();
+			Vertex* dest;
+			
 			//iterate over all outEdges and remove edges from Graph
-			for (auto edge_it = val->begin_outEdge(); edge_it != val->end_outEdge(); ++edge_it)
+			//for (auto edge_it = val->begin_outEdge(); edge_it != val->end_outEdge();)
+			while(val->begin_outEdge()!= val->end_outEdge())
 			{
-				//get pointer to destination 
-				auto *dest = edge_it->getDestination();
 
+				edge_it =std::prev(val->end_outEdge()); //get last element in container //can be begin_outEdge() but now assuming it's faster to pop last element
+
+				//get pointer to destination 
+				dest = edge_it->getDestination();
+				
 				//optional (?) check if dest belongs to this->Vertices
 				auto dest_id = dest->getID();
 				auto it = Vertices.find(id);
@@ -224,12 +231,18 @@ namespace graph {
 
 
 			//repeat procedure for inEdges
-			for (auto edge_it = val->begin_inEdge(); edge_it != val->end_inEdge(); ++edge_it)
+			//for (auto edge_it = val->begin_inEdge(); edge_it != val->end_inEdge();)
+
+			InEdgeIterator edge_it2 = val->begin_inEdge();
+			Vertex* src;
+
+			while (val->begin_inEdge() != val->end_inEdge())
 			{
-				//get source ID and find the source vertex
+				edge_it2 = val->begin_inEdge();
+				
 
-				auto *src = (edge_it)->getSource();
-
+				src = (edge_it2)->getSource(); //get source ID and find the source vertex
+				
 
 				//optional (?) check if source belongs to this->Vertices
 				auto src_id = src->getID();
@@ -242,7 +255,7 @@ namespace graph {
 
 				if (src != nullptr)
 				{
-					const auto *temp = &*(edge_it);
+					const auto *temp = &*(edge_it2);
 					//remove outEdge from source vertex and pointer from destiantion vertex (this)
 					src->removeOutEdge(temp);
 
