@@ -200,12 +200,12 @@ namespace graph {
 			GraphIterator& operator --() { --pos_; return *this; }
 			GraphIterator operator-- (int) { /*make assertions*/ GraphIterator tmp(*this); --pos_; return tmp; }
 
-			reference operator*() {
+			const reference operator*() {
 				return *(pos_->second); //double-dereferencing
 			}
 
 
-			pointer operator->() {
+			const pointer operator->() {
 				return pos_->second.get();
 			}
 
@@ -222,11 +222,11 @@ namespace graph {
 			//semi custom iterator which is basically a thin wrap for vector iterator
 			//boiler plate typedefs (using) provided for future expansion with accordance to C++17
 
-			using	value_type			= Edge  ;
-			using	difference_type		= ptrdiff_t;
-			using	pointer				= Edge*;
-			using	reference			= Edge& ;
-			/*using	const_reference		= const Edge&;*/
+			using	value_type			=  Edge  ;
+			using	difference_type		=  ptrdiff_t;
+			using	pointer				=  Edge*;
+			using	reference			=  Edge& ;
+			/*using	const_reference		=  Edge&;*/
 			using	iterator_category = std::forward_iterator_tag;
 	
 
@@ -274,7 +274,7 @@ namespace graph {
 			}
 
 		private:
-			std::vector<std::unique_ptr<Edge>>::iterator pos_;
+			std::vector<std::unique_ptr<Edge>>::const_iterator pos_;
 		};
 
 
@@ -285,10 +285,10 @@ namespace graph {
 			//semi custom iterator which is basically a thin wrap for vector iterator
 			//boiler plate typedefs (using) provided for future expansion with accordance to C++17
 
-			using	value_type = Edge;
+			using	value_type =  Edge;
 			using	difference_type = ptrdiff_t;
-			using	pointer = Edge*;
-			using	reference = Edge&;
+			using	pointer =   Edge*;
+			using	reference =  Edge&;
 			/*using	const_reference		= const Edge&;*/
 			using	iterator_category = std::forward_iterator_tag;
 
@@ -334,7 +334,7 @@ namespace graph {
 			}
 
 		private:
-			std::vector<Edge*>::iterator pos_;
+			std::vector<Edge*>::const_iterator pos_;
 		};
 
 	protected:
@@ -377,12 +377,12 @@ namespace graph {
 		/*!
 			returns ID of vertex
 		*/
-		std::size_t getID();
+		std::size_t getID() const;
 
 		/*!
 			returns the  total number of edges that go out of this vertex
 		*/
-		std::size_t countEdges();
+		std::size_t countEdges() const;
 
 
 		/*!
@@ -459,10 +459,13 @@ namespace graph {
 
 	
 		/*!
-			removes inedge that is starts at Vertex specifed by from ID and 
+			removes inedge that belongs to this Vertex'es inEdges and from Vertex that owns the edge itself (the Source Vertex) 
 		*/
-		
 		void removeInEdge(const Edge* edge);
+
+		/*!
+			removes outedge that belongs to this Vertex'es outEdges and from Vertex that was destination of the edge (the Destination Vertex)
+		*/
 		void removeOutEdge( const Edge* edge);
 
 	//public:
