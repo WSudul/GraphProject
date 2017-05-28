@@ -73,6 +73,7 @@ namespace graph {
 
 	std::size_t Graph::addVertex()
 	{
+		//#TODO rework to add the first min value that does not exist in Vertices (max_element is already O(n) )
 		using pairtype = std::pair<const std::size_t, std::unique_ptr<Vertex>>;
 		std::size_t id;
 		auto &it_id = std::max_element(Vertices.begin(), Vertices.end(), [](const pairtype &V1, const pairtype &V2) ->bool {return V1.first < V2.first; });
@@ -105,7 +106,7 @@ namespace graph {
 			//object already exists!
 		}
 
-		 //return unique id ,that will identify this object in future
+	
 	}
 
 
@@ -168,10 +169,6 @@ namespace graph {
 		auto &it_to = Vertices.find(to);
 		auto &it_end = Vertices.end();
 
-		//auto &it_edge = std::find_if(Edges.begin(), Edges.end(), [&it_from, &it_to](const std::unique_ptr<Edge> &e)->bool {return (it_from->second.get() == e->getSource() && it_to->second.get() == e->getDestination()); });
-
-
-
 		//check if both ends are existing
 		if (it_from != it_end && it_to != it_end)
 		{
@@ -179,11 +176,10 @@ namespace graph {
 			const Edge*  edgePtr = nullptr;
 			Vertex*  vertexFromPtr = it_from->second.get();
 			Vertex*  vertexToPtr = it_to->second.get();
-			edgePtr = vertexFromPtr->findOutEdge(vertexToPtr);
+			edgePtr = vertexFromPtr->findEdgeTo(vertexToPtr);
 			if (edgePtr != nullptr) 
 			{
-				it_to->second->removeInEdge(edgePtr); //remove pointer to edge from receiving vertex
-				it_from->second->removeOutEdge(edgePtr); //remove the edge itself
+					it_from->second->removeOutEdge(edgePtr); //remove the edge
 			}
 		}
 
@@ -201,26 +197,28 @@ namespace graph {
 
 			auto& val = it->second;
 			
-			//iterate over all outEdges and remove pointers from inEdges container of destination vertices
-			auto edge_it = val->begin_outEdge();// val->begin_outEdge();
-			
-
-			
-			//std::cout << "start looping"; //start looping
-			for (; edge_it != val->end_outEdge();++edge_it)
+			//iterate over all outEdges and remove edges from Graph
+			for (auto edge_it = val->begin_outEdge(); edge_it != val->end_outEdge();++edge_it)
 			{
-				//get destination ID and find the destination vertex
-				auto dest = edge_it->getDestination()->getID();
-				auto dest_it = Vertices.find(dest);
+				//get pointer to destination 
+				auto *dest = edge_it->getDestination();
+				
+				//optional (?) check if dest belongs to this->Vertices
+				auto dest_id = dest->getID();
+				auto it=Vertices.find(id);
+				if (it == Vertices.end())
+				{
+					//#TODO throw exception (?)
+				}
 
-
-				if (dest_it != Vertices.end())
+				//check if destination is pointing to valid object
+				if (dest != nullptr)
 				{
 					const auto *temp = &*(edge_it);
-					//remove pointer to inEdge from destination vertex
-					dest_it->second->removeInEdge(temp);
-
-					dest_it->second->countEdges();
+					//remove  from pointer from destination vertex and then object from source vertex
+					dest->removeInEdge(temp);
+					
+					
 				}
 				else
 				{
@@ -234,26 +232,31 @@ namespace graph {
 			{
 				//get source ID and find the source vertex
 				
-				auto source = (edge_it)->getSource()->getID();
-				auto &source_it = Vertices.find(source);
+				auto *src = (edge_it)->getSource();
+				
+
+				//optional (?) check if source belongs to this->Vertices
+				auto src_id = src->getID();
+				auto it = Vertices.find(id);
+				if (it == Vertices.end())
+				{
+					//#TODO throw exception (?)
+				}
 
 
-				if (source_it != Vertices.end())
+				if (src != nullptr)
 				{
 					const auto *temp = &*(edge_it);
-					//remove outEdge from source vertex
-					source_it->second->removeOutEdge(temp);
-
-					source_it->second->countEdges();
+					//remove outEdge from source vertex and pointer from destiantion vertex (this)
+					src->removeOutEdge(temp);
+	
 				}
 				else
 				{
 					//throw exception
 				}
 			}
-
-
-
+			
 			//erase the vertex from container
 			Vertices.erase(id);
 
@@ -345,8 +348,6 @@ namespace graph {
 
 	Graph::Vertex::~Vertex()
 	{
-		//std::cout << "Vertex dtor!" << std::endl;
-
 	}
 
 
@@ -365,20 +366,23 @@ namespace graph {
 	}
 
 
-	inline const graph::Graph::Edge * Graph::Vertex::findOutEdge(const Vertex * to) const
+	const graph::Graph::Edge * Graph::Vertex::findEdgeTo(const Vertex * to) const
 	{
-		auto &it = std::find_if(outEdges.begin(), outEdges.end(), 
+		auto it = std::find_if(outEdges.begin(), outEdges.end(), 
 			[&to](const std::unique_ptr<Edge>& E)->bool {return E->getDestination() == to; });
 
 		if (it != outEdges.end())
-		{
 			return it->get();
-		}
 		else
 		{
 			//search inEdges for undirected connection 
-			auto &it2 = std::find_if(inEdges.begin(), inEdges.end(), 
+			auto it2 = std::find_if(inEdges.begin(), inEdges.end(), 
 				[&to](const Edge* E)->bool {return  !(E->isDirected() ) && E->getSource() == to; }); //looks for UNDIRECTED edge that has Source same as Vertex to.
+
+			if (it2 != inEdges.end())
+				return *it2;
+			else
+				return nullptr;
 
 		}
 
@@ -386,21 +390,27 @@ namespace graph {
 	}
 
 
-
-
-	/*!
-	returns a pointer to first Edge that arrives from vertex based on specified predicament
-	*/
-
-	inline const graph::Graph::Edge * Graph::Vertex::findInEdge(const Vertex * from) const
+	const graph::Graph::Edge * Graph::Vertex::findEdgeFrom(const Vertex * from) const
 	{
 
-		const auto &it = std::find_if(inEdges.begin(), inEdges.end(), [&from](const Edge* E)->bool {return E->getDestination() == from; });
+		const auto &it = std::find_if(inEdges.begin(), inEdges.end(), 
+			[&from](const Edge* E)->bool {return E->getSource() == from; });
 
 
 		if (it != inEdges.end())
 		{
 			return *it;
+		}
+		else
+		{
+			//search outEdges for undirected connection 
+			auto it2 = std::find_if(outEdges.begin(), outEdges.end(),
+				[&from](const std::unique_ptr<Edge>& E)->bool {return  !(E->isDirected()) && E->getDestination() == from; }); //looks for UNDIRECTED edge that has Source same as Vertex to.
+
+			if (it2 != outEdges.end())
+				return it2->get();
+			else
+				return nullptr;
 		}
 
 		return nullptr;
@@ -481,11 +491,43 @@ namespace graph {
 			removeOutEdgeOnly(edge);
 		}
 		
-		
+	}
 
-		
-		return;
-		//outEdges.erase(std::remove_if(outEdges.begin(), outEdges.end(), [&edge](const std::unique_ptr<Edge>&e)->bool {return edge == e.get(); }));
+
+	Graph::OutEdgeIterator Graph::Vertex::begin_outEdge()
+	{
+		return OutEdgeIterator(outEdges.begin());
+	}
+
+
+	Graph::OutEdgeIterator Graph::Vertex::end_outEdge()
+	{
+
+		return OutEdgeIterator(outEdges.end());
+	}
+
+
+	inline Graph::InEdgeIterator Graph::Vertex::begin_inEdge()
+	{
+		return InEdgeIterator(inEdges.begin());
+	}
+
+
+	Graph::InEdgeIterator Graph::Vertex::end_inEdge()
+	{
+		return InEdgeIterator(inEdges.end());
+	}
+
+
+	Graph::OutEdgeIterator Graph::Vertex::begin()
+	{
+		return begin_outEdge();
+	}
+
+
+	Graph::OutEdgeIterator Graph::Vertex::end()
+	{
+		return end_outEdge();
 	}
 
 	void Graph::Vertex::removeOutEdgeOnly(const Edge * edge)

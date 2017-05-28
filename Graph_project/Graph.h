@@ -142,7 +142,9 @@ namespace graph {
 		GraphIterator end();
 
 	protected:
-		//#TODO clean up private/public locations
+		
+		//#TODO make Vertex/Edge public?
+
 		//forward declarations
 
 		class Vertex;
@@ -156,7 +158,6 @@ namespace graph {
 		//#TODO move implementation outside class?
 		//semi custom iterators (wrappers)
 
-		//#TODO iterator exposes too much info!
 		class GraphIterator
 		{
 		public:
@@ -328,7 +329,7 @@ namespace graph {
 				return **pos_; //double-dereferencing
 			}
 
-			//#TODO rework operator
+	
 			pointer operator->()  {
 				return *pos_;
 			}
@@ -337,9 +338,13 @@ namespace graph {
 			std::vector<Edge*>::const_iterator pos_;
 		};
 
+
+		/*!
+		returns string representation of single vertice
+		*/
+		virtual std::string Graph::vertexToString(const std::pair <const std::size_t, std::unique_ptr<Vertex>>& it);
+
 	protected:
-
-
 
 		/*
 			map of all vertices,key is unique ID assigned to each vertex
@@ -350,10 +355,7 @@ namespace graph {
 		*/
 		std::unordered_map<std::size_t, std::unique_ptr<Vertex>> Vertices;
 		
-		/*!
-			returns string representation of single vertice
-		*/
-		std::string Graph::vertexToString(const std::pair <const std::size_t , std::unique_ptr<Vertex>>& it);
+		
 
 	};
 
@@ -386,9 +388,10 @@ namespace graph {
 
 
 		/*!
-			returns a pointer to first Edge that reaches to vertex based on specified predicament
+			returns a const pointer to first Edge, connecting this Vertex and to Vertex,
+			that starts at this Vertex and reaches to Vertex or starts at to Vertex and is undirected
 		*/
-		const graph::Graph::Edge*  findOutEdge(const Vertex*  to) const;
+		const graph::Graph::Edge*  findEdgeTo(const Vertex*  to) const;
 
 
 		/*!
@@ -417,9 +420,10 @@ namespace graph {
 
 
 		/*!
-			returns const pointer to inedge that starts at from Vertex
+			returns const pointer to first edge , connecting from Vertex and this Vertex,
+			that starts at from Vertex or starts at this Vertex and is undirected
 		*/
-		const graph::Graph::Edge*  findInEdge(const Vertex*  from) const;
+		const graph::Graph::Edge*  findEdgeFrom(const Vertex*  from) const;
 
 
 		/*!
@@ -441,11 +445,10 @@ namespace graph {
 			return nullptr;
 		}
 
+		
 		virtual void setData() {};
 		virtual std::size_t getData() { return std::size_t(); }
 
-	
-		//#TODO addIn/OutEdge as private methods. Replace with simple addEdge (though name is confusing) that call addIn/OutEdge
 
 		/*!
 			adds inedge to vertex
@@ -470,32 +473,18 @@ namespace graph {
 		*/
 		void removeOutEdge( const Edge* edge);
 
-	//public:
-
-
 
 		/*!
 		
 			Returns an iterator pointing to the first element of outEdges
 		*/
-		OutEdgeIterator begin_outEdge() 
-		{
-			//return *(outEdgeBegin_Iter = std::move(std::unique_ptr<OutEdgeIterator>(new OutEdgeIterator(outEdges.begin()))));
-			
-			return OutEdgeIterator(outEdges.begin());
-		};
+		OutEdgeIterator begin_outEdge();
 
 		/*!
 
 			Returns an iterator pointing to the past the last element of outEdges
 		*/
-		OutEdgeIterator end_outEdge()
-		{
-			
-			//return *(outEdgeEnd_Iter = std::move(std::unique_ptr<OutEdgeIterator>(new OutEdgeIterator(outEdges.end()))));
-			//outEdgeEnd_Iter = std::move(std::unique_ptr<OutEdgeIterator>(new OutEdgeIterator(outEdges.end())));
-			return OutEdgeIterator(outEdges.end());
-		};
+		OutEdgeIterator end_outEdge();
 
 
 
@@ -504,38 +493,24 @@ namespace graph {
 
 			Returns an iterator pointing to the first element of inEdges
 		*/
-		InEdgeIterator begin_inEdge() 
-		{
-			//return *(std::move(std::unique_ptr<InEdgeIterator>(new InEdgeIterator(inEdges.begin()))));
-			return InEdgeIterator(inEdges.begin());
-		};
+		InEdgeIterator begin_inEdge();;
 
 		/*!
 
 			Returns an iterator pointing to the past the last element of inEdges
 		*/
-		InEdgeIterator end_inEdge() 
-		{
-			//return *(std::move(std::unique_ptr<InEdgeIterator>(new InEdgeIterator(inEdges.end()))));
-			return InEdgeIterator(inEdges.end());
-		}
+		InEdgeIterator end_inEdge();
 
 
 		/*!
 			Returns an iterator pointing to the first element of edges starting from this Vertex.
 		*/
-		OutEdgeIterator begin()
-		{
-			return begin_outEdge();
-		}
+		OutEdgeIterator begin();
 
 		/*!
 			Returns an iterator pointing to the past the last element of edges starting from this Vertex.
 		*/
-		OutEdgeIterator end()
-		{
-			return end_outEdge();
-		}
+		OutEdgeIterator end();
 
 	protected:
 
@@ -570,6 +545,7 @@ namespace graph {
 	class Graph::Edge
 	{
 	public:
+
 		Edge();
 		Edge(Vertex* source, Vertex* destination, int cost, bool directed=true);
 		virtual ~Edge();

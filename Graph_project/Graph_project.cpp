@@ -171,7 +171,7 @@ int main()
 	for (auto &it : *graph_ptr.get())
 	{
 
-		auto edge = (it.findOutEdge(&it));
+		auto edge = (it.findEdgeTo(&it));
 		if (edge != nullptr)
 			std::cout << "loop edge=" << edge->getDestination() << std::endl;
 
