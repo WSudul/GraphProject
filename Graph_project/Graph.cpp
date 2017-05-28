@@ -357,14 +357,14 @@ namespace graph {
 	}
 
 
-	inline std::size_t Graph::Vertex::getID()
+	inline std::size_t Graph::Vertex::getID() const
 	{
 		return uniq_id;
 	}
 
 
 
-	std::size_t Graph::Vertex::countEdges()
+	std::size_t Graph::Vertex::countEdges() const
 	{
 		//count number of outEdges (directed and undirected)
 		return (outEdges.size());
@@ -436,6 +436,9 @@ namespace graph {
 	inline void Graph::Vertex::removeInEdge(const  Edge * edge)
 	{
 
+		//call removal function for Source edge
+		auto src= edge->getSource();
+		src->removeOutEdge(edge);
 
 		//remove-erase idiom on vector container
 		inEdges.erase(std::remove(inEdges.begin(), inEdges.end(), edge));
@@ -445,15 +448,24 @@ namespace graph {
 
 	inline void Graph::Vertex::removeOutEdge( const Edge * edge)
 	{ 
-
+		
 		//remove-erase idiom behaves wonkly. Exception thrown when edge was NOT in container (reason: probably giving wrong pointer (inEdge pointer)
 
-		auto it=(std::find_if(outEdges.begin(), outEdges.end(), [&edge](const std::unique_ptr<Edge>&e)->bool {return edge == e.get(); }));
+		auto it=(std::find_if(outEdges.begin(), outEdges.end(), 
+			[&edge](const std::unique_ptr<Edge>&e)->bool {return edge == e.get(); }));
 		
 		
-		if(it!=outEdges.end())
+		if (it != outEdges.end())
+		{
+
+			//call removal function for Destination  edge
+			auto src = edge->getDestination();
+			src->removeOutEdge(edge);
+
+			//erase outgoing edge (erase the object itself).
 			outEdges.erase(it);
-		
+			
+		}
 		return;
 		//outEdges.erase(std::remove_if(outEdges.begin(), outEdges.end(), [&edge](const std::unique_ptr<Edge>&e)->bool {return edge == e.get(); }));
 	}

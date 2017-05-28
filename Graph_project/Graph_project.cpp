@@ -171,12 +171,19 @@ int main()
 	for (auto &it : *graph_ptr.get())
 	{
 
-		auto edge=(it.findOutEdge(&it));
-		if(edge!=nullptr)
-			std::cout<<"loop edge="<<edge->getDestination() << std::endl;
+		auto edge = (it.findOutEdge(&it));
+		if (edge != nullptr)
+			std::cout << "loop edge=" << edge->getDestination() << std::endl;
 
-		for (const auto it2 : it)
-			std::cout<<it2.getDestination() << " directed:" << it2.isDirected() << std::endl;
+		for (auto it2 : it)
+		{
+			std::cout << it2.getDestination() << " directed:" << it2.isDirected() << std::endl;
+			it2.setCost(10);
+		}
+
+		auto inEdge_it = it.begin_inEdge();
+		inEdge_it->isDirected();
+		
 	}
 
 
