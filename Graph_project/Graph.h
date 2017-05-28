@@ -92,7 +92,7 @@ namespace graph {
 				if (edgePtr != nullptr)
 				{
 					
-					it_to->second->removeInEdge(edgePtr); //remove pointer to edge from receiving vertex
+					//it_to->second->removeInEdge(edgePtr); //remove pointer to edge from receiving vertex //NEEDS TO CALL removeIn/Out only once!
 					it_from->second->removeOutEdge(edgePtr); //remove the edge itself
 					
 
@@ -444,7 +444,9 @@ namespace graph {
 		virtual void setData() {};
 		virtual std::size_t getData() { return std::size_t(); }
 
-	//private:
+	
+		//#TODO addIn/OutEdge as private methods. Replace with simple addEdge (though name is confusing) that call addIn/OutEdge
+
 		/*!
 			adds inedge to vertex
 		*/
@@ -515,7 +517,7 @@ namespace graph {
 		InEdgeIterator end_inEdge() 
 		{
 			//return *(std::move(std::unique_ptr<InEdgeIterator>(new InEdgeIterator(inEdges.end()))));
-			InEdgeIterator(inEdges.end());
+			return InEdgeIterator(inEdges.end());
 		}
 
 
@@ -528,7 +530,7 @@ namespace graph {
 		}
 
 		/*!
-		Returns an iterator pointing to the past the last element of edges starting from this Vertex.
+			Returns an iterator pointing to the past the last element of edges starting from this Vertex.
 		*/
 		OutEdgeIterator end()
 		{
@@ -541,12 +543,20 @@ namespace graph {
 
 
 
-		std::vector<Edge*> inEdges; //list of all edges that are pointing to this node
-		//std::vector<Edge*> outEdges; //list of all edges that are pointing from this node
+		std::vector<Edge*> inEdges; //container of all edges that are pointing to this node
 		
-		std::vector<std::unique_ptr<Edge>> outEdges;
+		std::vector<std::unique_ptr<Edge>> outEdges;  //container of all edges that are pointing from this node
 
+
+		/*!
+			removes outEdge edge from this Vertex. Destroys the object itself
+		*/
+		void removeOutEdgeOnly(const Edge* edge);
 		
+		/*!
+			removes inEdge edge from this Vertex. Removes only pointer from container to the object
+		*/
+		void removeInEdgeOnly(const Edge* edge);
 
 
 

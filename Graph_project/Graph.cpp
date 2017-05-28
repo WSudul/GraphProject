@@ -436,12 +436,15 @@ namespace graph {
 	inline void Graph::Vertex::removeInEdge(const  Edge * edge)
 	{
 
-		//call removal function for Source edge
-		auto src= edge->getSource();
-		src->removeOutEdge(edge);
+		if (edge != nullptr)
+		{
+			removeInEdgeOnly(edge);
 
-		//remove-erase idiom on vector container
-		inEdges.erase(std::remove(inEdges.begin(), inEdges.end(), edge));
+			auto src = edge->getSource();
+			src->removeOutEdgeOnly(edge);
+		}
+		
+
 				
 		return;
 	}
@@ -449,25 +452,45 @@ namespace graph {
 	inline void Graph::Vertex::removeOutEdge( const Edge * edge)
 	{ 
 		
-		//remove-erase idiom behaves wonkly. Exception thrown when edge was NOT in container (reason: probably giving wrong pointer (inEdge pointer)
-
-		auto it=(std::find_if(outEdges.begin(), outEdges.end(), 
-			[&edge](const std::unique_ptr<Edge>&e)->bool {return edge == e.get(); }));
-		
-		
-		if (it != outEdges.end())
+		if(edge!=nullptr)
 		{
+			auto dest = edge->getDestination();
+			//remove inEdge in destination vertex
+			dest->removeInEdgeOnly(edge);
 
-			//call removal function for Destination  edge
-			auto src = edge->getDestination();
-			src->removeOutEdge(edge);
-
-			//erase outgoing edge (erase the object itself).
-			outEdges.erase(it);
-			
+			//remove the object itself
+			removeOutEdgeOnly(edge);
 		}
+		
+		
+
+		
 		return;
 		//outEdges.erase(std::remove_if(outEdges.begin(), outEdges.end(), [&edge](const std::unique_ptr<Edge>&e)->bool {return edge == e.get(); }));
+	}
+
+	void Graph::Vertex::removeOutEdgeOnly(const Edge * edge)
+	{
+
+		//remove-erase idiom behaves wonkly. Exception thrown when edge was NOT in container (reason: probably giving wrong pointer (inEdge pointer)
+
+
+		auto it = (std::find_if(outEdges.begin(), outEdges.end(),
+			[&edge](const std::unique_ptr<Edge>&e)->bool {return edge == e.get(); }));
+
+
+		if (it != outEdges.end())
+		{
+			//erase outgoing edge (erase the object itself).
+			outEdges.erase(it);
+		}
+
+	}
+
+	void Graph::Vertex::removeInEdgeOnly(const Edge * edge)
+	{
+		//remove-erase idiom on vector container
+		inEdges.erase(std::remove(inEdges.begin(), inEdges.end(), edge));
 	}
 
 }
