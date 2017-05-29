@@ -11,6 +11,7 @@
 #include <chrono>
 #include <fstream>
 #include "DataGraph.h"
+#include "gtest/gtest.h"
 
 //forces busy wait for at least val seconds
 void forceWait(const double val)
@@ -105,122 +106,201 @@ std::unique_ptr<graph::Graph> grid_square(const unsigned int n)
 	return std::move(g);
 }
 
-int main()
+
+TEST(VertexEdgeCountTest, OnlyCreation)
+{
+	std::unique_ptr<graph::Graph> g_ptr = grid_square(10);
+	ASSERT_EQ(100, g_ptr->vertexCount());
+	ASSERT_EQ(180, g_ptr->edgeCount());
+
+	g_ptr = grid_square(4);
+	ASSERT_EQ(16, g_ptr->vertexCount());
+	ASSERT_EQ(24, g_ptr->edgeCount());
+
+	
+	g_ptr = grid_square(1);
+	ASSERT_EQ(1, g_ptr->vertexCount());
+	ASSERT_EQ(0, g_ptr->edgeCount());
+
+	g_ptr = grid_square(0);
+	ASSERT_EQ(0, g_ptr->vertexCount());
+	ASSERT_EQ(0, g_ptr->edgeCount());
+
+}
+
+
+TEST(VertexEdgeCountTest, RemovedEdges)
+{
+	std::unique_ptr<graph::Graph> g_ptr = grid_square(10);
+	g_ptr->removeDirEdge(0, 1);
+	ASSERT_EQ(100, g_ptr->vertexCount());
+	ASSERT_EQ(179, g_ptr->edgeCount());
+	
+
+	g_ptr = grid_square(4);
+	g_ptr->removeDirEdge(0, 1);
+	ASSERT_EQ(16, g_ptr->vertexCount());
+	ASSERT_EQ(23, g_ptr->edgeCount());
+
+
+	g_ptr = grid_square(1);
+	g_ptr->removeDirEdge(0, 1); //not existing edge
+	ASSERT_EQ(1, g_ptr->vertexCount());
+	ASSERT_EQ(0, g_ptr->edgeCount());
+
+	g_ptr = grid_square(0);
+	g_ptr->removeDirEdge(0, 1); //not exisitng edge
+	ASSERT_EQ(0, g_ptr->vertexCount());
+	ASSERT_EQ(0, g_ptr->edgeCount());
+
+}
+
+
+TEST(VertexEdgeCountTest, RemovedVertex)
+{
+	std::unique_ptr<graph::Graph> g_ptr = grid_square(10);
+	g_ptr->removeVertex(9);
+	ASSERT_EQ(99, g_ptr->vertexCount());
+	ASSERT_EQ(178, g_ptr->edgeCount());
+
+	g_ptr->removeVertex(1);
+	ASSERT_EQ(98, g_ptr->vertexCount());
+	ASSERT_EQ(177, g_ptr->edgeCount());
+
+	
+	g_ptr = grid_square(4);
+	g_ptr->removeVertex(3);
+	ASSERT_EQ(15, g_ptr->vertexCount());
+	ASSERT_EQ(22, g_ptr->edgeCount());
+	g_ptr->removeVertex(1);
+	ASSERT_EQ(14, g_ptr->vertexCount());
+	ASSERT_EQ(19, g_ptr->edgeCount());
+
+
+	g_ptr = grid_square(1);
+	g_ptr->removeVertex(10); //not exist vertex
+	ASSERT_EQ(1, g_ptr->vertexCount());
+	ASSERT_EQ(0, g_ptr->edgeCount());
+
+	g_ptr->removeVertex(0);
+	ASSERT_EQ(0, g_ptr->vertexCount());
+	ASSERT_EQ(0, g_ptr->edgeCount());
+
+	g_ptr = grid_square(0);
+	g_ptr->removeVertex(0); //not exist vertex
+	ASSERT_EQ(0, g_ptr->vertexCount());
+	ASSERT_EQ(0, g_ptr->edgeCount());
+
+}
+
+
+int main(int argc, _TCHAR* argv[])
 {
 	 
-	std::ofstream file;
-	file.open("maptest.txt");
+	//std::ofstream file;
+	//file.open("maptest.txt");
 
 
-		
-	graph::Graph* g2= new DataGraph<int>;
-	graph::Graph* g3= new DataGraph<float>;
-
-	delete g2;
-	delete g3;
-
-	const unsigned a = 3;
-	//create a square net of vertices
-	std::chrono::high_resolution_clock::time_point t3 = std::chrono::high_resolution_clock::now();
-
-	std::unique_ptr<graph::Graph> graph_ptr = grid_square(a);
-
-	std::chrono::high_resolution_clock::time_point t4 = std::chrono::high_resolution_clock::now();
-
-	std::chrono::duration<double> time_span3 = std::chrono::duration_cast<std::chrono::duration<double>>(t4 - t3);
-	std::cout << "\t\t-square=" << a*a << "\ttime=" << time_span3.count() << std::endl;
-	std::cout << "\t\t-edges=" << graph_ptr->edgeCount() << "\tt-vertices=" << graph_ptr->vertexCount()<< std::endl;
-	//graph_ptr.reset();
-
-	for(int x=1;x<1;++x)
-		for (int n = 1; n < 2; n += 1)
-		{
-			//start clock
-			std::chrono::high_resolution_clock::time_point t1 = std::chrono::high_resolution_clock::now();
-
-			std::unique_ptr<graph::Graph> graph_ptr = createGraph(10, 4, n, x);
-
-			std::chrono::high_resolution_clock::time_point t2 = std::chrono::high_resolution_clock::now();
-				
-			//get duration
-			std::chrono::duration<double> time_span = std::chrono::duration_cast<std::chrono::duration<double>>(t2 - t1);
-			std::cout << "vertices total= " << n*10<< "\tedges per vertice= " << 4*x << "time= " << time_span.count() << std::endl;
-			file << n * 10 << "\t" << 4 * x << "\t" << time_span.count() << "\n";
-
-
-			graph_ptr->removeDirEdge(0, 2);
-			graph_ptr->removeDirEdge(1, 2);
-
-			std::cout<<graph_ptr->edgeCount();
 	
-		
+	//const unsigned a = 3;
+	////create a square net of vertices
+	//std::chrono::high_resolution_clock::time_point t3 = std::chrono::high_resolution_clock::now();
+
+	//std::unique_ptr<graph::Graph> graph_ptr = grid_square(a);
+
+	//std::chrono::high_resolution_clock::time_point t4 = std::chrono::high_resolution_clock::now();
+
+	//std::chrono::duration<double> time_span3 = std::chrono::duration_cast<std::chrono::duration<double>>(t4 - t3);
+	//std::cout << "\t\t-square=" << a*a << "\ttime=" << time_span3.count() << std::endl;
+	//std::cout << "\t\t-edges=" << graph_ptr->edgeCount() << "\tt-vertices=" << graph_ptr->vertexCount()<< std::endl;
+	////graph_ptr.reset();
+
+	//for(int x=1;x<1;++x)
+	//	for (int n = 1; n < 2; n += 1)
+	//	{
+	//		//start clock
+	//		std::chrono::high_resolution_clock::time_point t1 = std::chrono::high_resolution_clock::now();
+
+	//		std::unique_ptr<graph::Graph> graph_ptr = createGraph(10, 4, n, x);
+
+	//		std::chrono::high_resolution_clock::time_point t2 = std::chrono::high_resolution_clock::now();
+	//			
+	//		//get duration
+	//		std::chrono::duration<double> time_span = std::chrono::duration_cast<std::chrono::duration<double>>(t2 - t1);
+	//		std::cout << "vertices total= " << n*10<< "\tedges per vertice= " << 4*x << "time= " << time_span.count() << std::endl;
+	//		file << n * 10 << "\t" << 4 * x << "\t" << time_span.count() << "\n";
 
 
+	//		graph_ptr->removeDirEdge(0, 2);
+	//		graph_ptr->removeDirEdge(1, 2);
 
-
-	}
-	
-
-	/*std::cout << graph_ptr->edgeCount() << "\t" << graph_ptr->vertexCount() << std::endl;
-	
-	std::vector<std::string> vec = graph_ptr->verticesToString();
-	for(auto it:vec)
-		std::cout <<it << std::endl;
-	*/
-
-	graph_ptr->removeVertex(1);
-	std::cout << "removed vert1";
-	graph_ptr->removeVertex(0);
-	
-	for (auto &it : *graph_ptr.get())
-	{
-
-		std::cout << it.getID() << "\tout of:" << graph_ptr->vertexCount() << std::endl;
-		auto edge = (it.findOutEdge(&it));
-		if (edge != nullptr)
-			std::cout << "loop edge=" << edge->getDestination() << std::endl;
-
-		//auto outEdge_it = it.begin_outEdge();
-		
-		//it.findInEdge(it, [](const int cost)->bool {return cost == 100; });
-		//it.findOutEdge(it, [](short cost) ->bool {return cost == 100; });
-		// [](const int cost)->bool {return cost == 100; }
-
-		for (auto it2 : it)
-		{
-
-			//std::cout << it2.getDestination() << " directed:" << it2.isDirected() << std::endl;
-			it2.setCost(10);
-		}
-
-		auto inEdge_it = it.begin_inEdge();
-		//inEdge_it->isDirected();
-		if (inEdge_it != it.end_inEdge())
-		{
-			std::cout << inEdge_it->getCost() << "\t" <<
-				inEdge_it->getDestination() << "\t" <<
-				inEdge_it->getSource() << "\t" <<
-				inEdge_it->getID() << "\t" <<
-				inEdge_it->isDirected() << "\n";
-		}
-	
-	}
-
-
-	////for (const auto &it : vec)
-	//	//std::cout << it << std::endl;
-
-	//G1.removeEdge(1, 2);
+	//		std::cout<<graph_ptr->edgeCount();
 	//
-	//vec = G1.verticesToString();
+	//	
 
-	////for (const auto &it : vec)
-	//	//std::cout << it << std::endl;
 
-	graph_ptr.reset();
+
+
+	//}
+	//
+
+	///*std::cout << graph_ptr->edgeCount() << "\t" << graph_ptr->vertexCount() << std::endl;
+	//
+	//std::vector<std::string> vec = graph_ptr->verticesToString();
+	//for(auto it:vec)
+	//	std::cout <<it << std::endl;
+	//*/
+
+	//graph_ptr->removeVertex(1);
+	//std::cout << "removed vert1";
+	//graph_ptr->removeVertex(0);
+	//
+	//for (auto &it : *graph_ptr.get())
+	//{
+
+	//	std::cout << it.getID() << "\tout of:" << graph_ptr->vertexCount() << std::endl;
+	//	auto edge = (it.findOutEdge(&it));
+	//	if (edge != nullptr)
+	//		std::cout << "loop edge=" << edge->getDestination() << std::endl;
+
+	//	//auto outEdge_it = it.begin_outEdge();
+	//	
+	//	//it.findInEdge(it, [](const int cost)->bool {return cost == 100; });
+	//	//it.findOutEdge(it, [](short cost) ->bool {return cost == 100; });
+	//	// [](const int cost)->bool {return cost == 100; }
+
+	//	for (auto it2 : it)
+	//	{
+
+	//		//std::cout << it2.getDestination() << " directed:" << it2.isDirected() << std::endl;
+	//		it2.setCost(10);
+	//	}
+
+	//	auto inEdge_it = it.begin_inEdge();
+	//	//inEdge_it->isDirected();
+	//	if (inEdge_it != it.end_inEdge())
+	//	{
+	//		std::cout << inEdge_it->getCost() << "\t" <<
+	//			inEdge_it->getDestination() << "\t" <<
+	//			inEdge_it->getSource() << "\t" <<
+	//			inEdge_it->getID() << "\t" <<
+	//			inEdge_it->isDirected() << "\n";
+	//	}
+	//
+	//}
+
+
+	//
+
+	//graph_ptr.reset();
+	
+
+::testing::InitGoogleTest(&argc, argv);
+
 	_CrtDumpMemoryLeaks();
 
 
-    return 0;
+
+    return RUN_ALL_TESTS();
 }
 
