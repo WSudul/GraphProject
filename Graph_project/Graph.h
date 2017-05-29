@@ -139,10 +139,29 @@ namespace graph {
 
 
 		/*!
-			returns true whether a traversable path exists from vert1 to ver2
+			returns true whether a traversable path exists from vert1 to vert2
 		
 		*/
-		bool traversable(std::size_t vert1, std::size_t ver2);
+		bool traversable(std::size_t vert1, std::size_t vert2)
+		{
+			auto& v1_it = Vertices.find(vert1);
+			auto& v2_it = Vertices.find(vert2);
+
+			//check if vertices exists at all
+			if (v1_it == Vertices.end() && v2_it == Vertices.end())
+				return false; 
+			
+			//get handles to Vertices
+			auto* v1 = v1_it->second.get();
+			auto* v2 = v2_it->second.get();
+
+			//call DFS method #TODO implement DFS
+			
+			
+
+
+
+		};
 
 		/*!
 			returns true if all 
