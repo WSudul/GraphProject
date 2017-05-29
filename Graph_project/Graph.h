@@ -13,12 +13,12 @@
 goals:
 
 Node access -> O(1) //depends upon container, unordered_map offers average  amortized O(1)
-Add node	-> O(1) //depends upon container, but O(1) amortized for average case or O(nlogn) without node
+Add vertex	-> O(1) //depends upon container, but O(1) amortized for average case or O(nlogn) without giving vertex ID
 Add edge	-> O(1) //requires finding both Nodes O(1) and then adding relevant info O(1) in both of them
 Remove edge -> O(~1) //requires finding both Nodes O(1), then performing removal on edge ( O(deg(V) ) in this case), worst case O(2(n+n))=O(n)
 Remove node -> O(V+E) //requires iterating over edge containers (2x O(degV)) and removing inedges and outedges from other Vertices (O(1) for finding vertice, O(deg(V_1)) , O(deg(V_2))).
 
-Class representing graph via  2 way adjacency list (Node knows both about edges that point from and to the Node)
+Class representing graph via  2 way adjacency list (Vertex knows both about edges that point from and to the Vertex)
 
 */
 
@@ -36,8 +36,6 @@ namespace graph {
 		class OutEdgeIterator;
 		class InEdgeIterator;
 
-		//class representing a traversable path between 2 Vertices
-		class Path;
 
 		/*!
 			add a Vertex by automatically assigning next free ID after current max ID
@@ -531,10 +529,6 @@ namespace graph {
 		*/
 		const graph::Graph::Edge*  findInEdge(const std::size_t id) const;
 
-
-
-		virtual void setData() {};
-		virtual std::size_t getData() { return std::size_t(); }
 
 
 		/*!
