@@ -165,7 +165,7 @@ TEST(VertexEdgeCountTest, RemovedVertex)
 
 	g_ptr->removeVertex(1);
 	ASSERT_EQ(98, g_ptr->vertexCount());
-	ASSERT_EQ(177, g_ptr->edgeCount());
+	ASSERT_EQ(175, g_ptr->edgeCount());
 
 	
 	g_ptr = grid_square(4);
@@ -193,6 +193,79 @@ TEST(VertexEdgeCountTest, RemovedVertex)
 
 }
 
+TEST(VertexEdgeCountTest, AddVertex)
+{
+	std::unique_ptr<graph::Graph> g_ptr = grid_square(10);
+	g_ptr->addVertex(100);
+	ASSERT_EQ(101, g_ptr->vertexCount());
+	ASSERT_EQ(180, g_ptr->edgeCount());
+
+
+	g_ptr = grid_square(4);
+	g_ptr->addVertex(16);
+	ASSERT_EQ(17, g_ptr->vertexCount());
+	ASSERT_EQ(24, g_ptr->edgeCount());
+
+
+	g_ptr = grid_square(1);
+	g_ptr->addVertex(10);
+	ASSERT_EQ(2, g_ptr->vertexCount());
+	ASSERT_EQ(0, g_ptr->edgeCount());
+
+
+	g_ptr = grid_square(0);
+	g_ptr->addVertex(1);
+	ASSERT_EQ(1, g_ptr->vertexCount());
+	ASSERT_EQ(0, g_ptr->edgeCount());
+
+	//add existing vertex
+	g_ptr = grid_square(3);
+	g_ptr->addVertex(3); 
+	ASSERT_EQ(9, g_ptr->vertexCount());
+	ASSERT_EQ(12, g_ptr->edgeCount());
+
+}
+
+
+TEST(VertexEdgeCountTest, AddVertexWithoutID)
+{
+	std::unique_ptr<graph::Graph> g_ptr = grid_square(10);
+	g_ptr->addVertex();
+	ASSERT_EQ(101, g_ptr->vertexCount());
+	ASSERT_EQ(180, g_ptr->edgeCount());
+
+
+	g_ptr = grid_square(4);
+	g_ptr->addVertex();
+	ASSERT_EQ(17, g_ptr->vertexCount());
+	ASSERT_EQ(24, g_ptr->edgeCount());
+
+
+	g_ptr = grid_square(1);
+	g_ptr->addVertex();
+	ASSERT_EQ(2, g_ptr->vertexCount());
+	ASSERT_EQ(0, g_ptr->edgeCount());
+
+
+	g_ptr = grid_square(0);
+	g_ptr->addVertex();
+	ASSERT_EQ(1, g_ptr->vertexCount());
+	ASSERT_EQ(0, g_ptr->edgeCount());
+
+	//add 2 vertices and then add 1 vertice with already existing ID
+	g_ptr = grid_square(3);
+	g_ptr->addVertex();
+	g_ptr->addVertex();
+	g_ptr->addVertex(0); //already existing ID
+	ASSERT_EQ(11, g_ptr->vertexCount());
+	g_ptr->removeVertex(0); //remove ID
+	ASSERT_EQ(10, g_ptr->vertexCount());
+	g_ptr->addVertex(0); //insert it again
+	ASSERT_EQ(11, g_ptr->vertexCount());
+	
+
+
+}
 
 int main(int argc, _TCHAR* argv[])
 {
@@ -297,10 +370,13 @@ int main(int argc, _TCHAR* argv[])
 
 ::testing::InitGoogleTest(&argc, argv);
 
-	_CrtDumpMemoryLeaks();
 
 
 
     return RUN_ALL_TESTS();
+
+	getchar();
+	_CrtDumpMemoryLeaks();
+
 }
 

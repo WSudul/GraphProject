@@ -16,7 +16,7 @@ namespace graph {
 
 	Graph::Edge::~Edge()
 	{
-		std::cout << "Edge dtor!" << std::endl;
+		//std::cout << "Edge dtor!" << std::endl;
 	}
 
 	short Graph::Edge::getCost() const
