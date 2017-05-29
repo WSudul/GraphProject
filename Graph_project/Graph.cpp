@@ -377,7 +377,7 @@ namespace graph {
 
 	const graph::Graph::Edge* Graph::Vertex::findEdgeTo(const Vertex * to) const
 	{
-		auto * edge_ptr = findOutEdge(to);
+		const Edge* edge_ptr = findOutEdge(to);
 
 		if (edge_ptr == nullptr)
 			edge_ptr = findInEdge(to, [](const Edge * e)->bool { return !(e->isDirected()); });
@@ -390,7 +390,7 @@ namespace graph {
 	const graph::Graph::Edge* Graph::Vertex::findEdgeFrom(const Vertex * from) const
 	{
 
-		auto * edge_ptr = findInEdge(from);
+		const Edge* edge_ptr = findInEdge(from);
 		if (edge_ptr == nullptr)
 			edge_ptr = findOutEdge(from, [](const std::unique_ptr<Edge>& e)->bool { return !(e->isDirected()); });
 		
@@ -399,6 +399,19 @@ namespace graph {
 	}
 
 
+	const graph::Graph::Edge * Graph::Vertex::findInEdge(const std::size_t id) const
+	{
+
+		auto it = std::find_if(inEdges.begin(), inEdges.end(),
+			[&id](const Edge* E)->bool {auto* v = E->getSource(); return v->getID() == id; });
+
+		if (it != inEdges.end())
+			return *it;
+		else
+			return nullptr;
+
+
+	}
 
 	inline void Graph::Vertex::addInEdge(std::unique_ptr<Edge> edge)
 	{
@@ -572,6 +585,18 @@ namespace graph {
 			return *it;
 		else
 			return nullptr;
+	}
+
+	const graph::Graph::Edge * Graph::Vertex::findOutEdge(const std::size_t id) const
+	{
+		auto it = std::find_if(outEdges.begin(), outEdges.end(),
+			[&id](const std::unique_ptr<Edge>& E)->bool {auto* v = E->getDestination(); return v->getID() == id; });
+
+		if (it != outEdges.end())
+			return it->get();
+		else
+			return nullptr;
+
 	}
 
 

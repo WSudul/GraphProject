@@ -36,7 +36,7 @@ namespace graph {
 		class OutEdgeIterator;
 		class InEdgeIterator;
 
-		//class representing a traversible path between 2 Vertices
+		//class representing a traversable path between 2 Vertices
 		class Path;
 
 		/*!
@@ -141,10 +141,10 @@ namespace graph {
 
 
 		/*!
-			returns true whether a traversible path exists from vert1 to ver2
+			returns true whether a traversable path exists from vert1 to ver2
 		
 		*/
-		bool traversible(std::size_t vert1, std::size_t ver2);
+		bool traversable(std::size_t vert1, std::size_t ver2);
 
 		/*!
 			returns true if all 
@@ -414,23 +414,25 @@ namespace graph {
 
 
 		/*!
-			returns a const pointer to first Edge, connecting this Vertex and to Vertex,
-			that starts at this Vertex and reaches to Vertex or starts at to Vertex and is undirected
+			returns a pointer const to first Edge, connecting this Vertex and to Vertex,
+			that starts at this Vertex and reaches to Vertex or starts at to Vertex and is undirected.
+			Searches outgoing edges first and if not matching edge is found, it searches inedges for valid undirected connection
 		*/
 		const graph::Graph::Edge*  findEdgeTo(const Vertex*  to) const;
 
 
+
 		/*!
-			returns const pointer to first edge , connecting from Vertex and this Vertex,
+			returns pointer (to const Edge) to first edge , connecting from Vertex and this Vertex,
 			that starts at from Vertex or starts at this Vertex and is undirected
+			Searches incomming edges first and if not matching edge is found, it searches outedges for valid undirected connection
 		*/
 		const graph::Graph::Edge*  findEdgeFrom(const Vertex*  from) const;
 
 
-
 		/*!
 			Template method for finding  outEdge
-			returns const pointer to outedge that starts at from Vertex that meets the predicament
+			returns pointer (to const Edge) to outedge that starts at from Vertex that meets the predicament
 		*/
 		template<typename _Pr>
 		const graph::Graph::Edge*  findOutEdge(const Vertex*  to, _Pr& Pred) const
@@ -450,7 +452,7 @@ namespace graph {
 
 		/*!
 			Template method for finding  outEdge
-			returns const pointer to outedge that starts at from Vertex that meets the predicament
+			returns pointer (to const Edge) to outedge that starts at from Vertex that meets the predicament
 			Pred1 compares std::unique_ptr<Edge> with defined predicament.
 			Pred2 looks specifically at the cost of Edge and thus compares Edge's cost to Pred1.  Default Pred2 always yields true
 			Returns const pointer to outedge that starts at from Vertex that meets the predicaments
@@ -469,7 +471,8 @@ namespace graph {
 
 
 		/*!
-			returns a pointer to first Edge that arrives from vertex based on specified predicament
+		Template method for finding  inEdge
+			returns a pointer (to const Edge) to first Edge that arrives from vertex based on specified predicament
 		*/
 		template<typename _Pr>
 		const graph::Graph::Edge*  findInEdge(const Vertex*  from, _Pr& Pred) const
@@ -484,11 +487,12 @@ namespace graph {
 			return nullptr;
 		}
 
+
 		/*!
 			Template method for finding  outEdge
-			returns const pointer to outedge that starts at from Vertex that meets the predicament
+			returns pointer (to const Edge) to outedge that starts at from Vertex that meets the predicament
 			Pred1 compares Edge* with defined predicament.
-			Pred1 looks specifically at the cost of Edge and thus compares Edge's cost to Pred2.  Default Pred2 always yields true
+			Pred2 looks specifically at the cost of Edge and thus compares Edge's cost to Pred2.  Default Pred2 always yields true
 			Returns const pointer to outedge that starts at from Vertex that meets the predicaments
 		*/
 		template<typename _Pr1, typename _Pr2>
@@ -504,12 +508,28 @@ namespace graph {
 		}
 
 
+		/*!
+			Finds outEdge that connects to Vertex to
+		*/
 		const graph::Graph::Edge* findOutEdge(const Vertex * to) const;
 
 
+		/*!
+			Finds inEdge that connects to Vertex from
+		*/
 		const graph::Graph::Edge* findInEdge(const Vertex * from) const;
 
-		
+
+		/*!
+			overload of findOutEdge using ID as argument. Looks only at the outEdges
+		*/
+		const graph::Graph::Edge*  findOutEdge(const std::size_t id) const;
+
+
+		/*!
+			overload of findInEdge using ID as argument. Looks only at the inEdges
+		*/
+		const graph::Graph::Edge*  findInEdge(const std::size_t id) const;
 
 
 
