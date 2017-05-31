@@ -9,6 +9,8 @@
 #include <string>
 
 
+//#TODO  RETURNING REFERENCES INSTEAD OF POINTERS IN FINDING EDGE ?
+
 /*!
 goals:
 
@@ -73,7 +75,7 @@ namespace graph {
 		template<typename _Pr>
 		void removeDirEdge(std::size_t from, std::size_t to,_Pr& Pred )
 		{
-			//#TODO refractor this
+
 
 			//finds from,to vertices
 			auto &it_from = Vertices.find(from);
@@ -93,7 +95,7 @@ namespace graph {
 				if (edgePtr != nullptr)
 				{
 					
-					//it_to->second->removeInEdge(edgePtr); //remove pointer to edge from receiving vertex //NEEDS TO CALL removeIn/Out only once!
+					//NEEDS TO CALL removeIn/Out only once!
 					it_from->second->removeOutEdge(edgePtr); //remove the edge itself
 					
 
@@ -178,6 +180,7 @@ namespace graph {
 		*/
 		GraphIterator end();
 
+
 	protected:
 		
 		//#TODO make Vertex/Edge public?
@@ -247,6 +250,7 @@ namespace graph {
 			const pointer operator->() {
 				return pos_->second.get();
 			}
+
 
 		private:
 			std::unordered_map<std::size_t, std::unique_ptr<Vertex>>::iterator pos_;
@@ -383,9 +387,25 @@ namespace graph {
 
 
 		/*!
-		returns string representation of single vertice
+			returns string representation of single vertice
 		*/
 		virtual std::string Graph::vertexToString(const std::pair <const std::size_t, std::unique_ptr<Vertex>>& it);
+
+
+		/*!
+			returns reference to element identified by ID or inserts element by calling default constructor of Vertex
+		*/
+		const Vertex& operator[](std::size_t k) {
+			return *(Vertices[k]);
+		}
+
+
+		/*!
+			returns reference to element identified by ID or inserts element by calling default constructor of Vertex
+		*/
+		const Vertex& at(std::size_t k) {
+			return *(Vertices.at(k));
+		}
 
 	protected:
 
