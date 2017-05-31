@@ -299,14 +299,91 @@ namespace graph {
 		return str;
 	}
 
+	/*!
+	returns list of nodes that are needed to traverse in order to reach from v1 to v2 as a result of DFS
+	*/
+
+	std::vector<std::size_t> Graph::DFS(const Vertex * v1, const Vertex * v2)
+	{
+
+		//#TODO assert validity of v1,v2 ->not nullptr , belong to graph (find)
+
+		//assuming a "large" graph #TODO case for small graphs !
+		std::unordered_set<const Vertex*> visited;
+		std::stack<const Vertex*> path;
+
+		const Vertex* currVertex =v1;
+		visited.insert(currVertex);
+
+		bool found_not_visited = false;
+		
+
+		while (currVertex != v2 && !path.empty()) {
+			
+			for (auto edge : *currVertex) //iterate over const elements
+			{
+				const Vertex* dest = edge.getDestination();
+
+				auto p = visited.insert(dest);
+
+				if (p.second) {
+					//dest Vertex not present,gets marked as visited
+					path.push(currVertex); //add new node to path
+
+					currVertex = dest; //explore new node
+					found_not_visited = true;
+					break; //break for loop #TODO rework tihs
+				};
+
+			}
+
+			//loop through inEdges in search of undirected edges!
+			if (!found_not_visited)
+			{
+				for (auto it = currVertex->begin_inEdge(); it != currVertex->end_inEdge(); ++it)
+				{
+					if (!it->isDirected()) {
+						const Vertex* source = it->getSource();
+
+						auto p = visited.insert(source);
+
+						if (p.second) {
+							//dest Vertex not present,gets marked as visited
+							path.push(currVertex); //add new node to path
+
+							currVertex = source; //explore new node
+							found_not_visited = true;
+							break; //break for loop #TODO rework tihs
+						};
+					}
+						
+				}
+			}
+
+			if (!found_not_visited)
+			{
+				path.pop();
+			}
+
+
+		};
+
+		if (path.empty())
+			return std::vector<std::size_t>(); //return empty vector if there was no solution
+
+		path.push(v2);
+		//path now contains solution-> v1, v_n,...v_m, v2
+		//reverse it and you have v1->v2 (v1->v2 != v2->v1 !!)
+
+	}
+
 	inline std::string Graph::vertexToString(const std::size_t &name)
 	{
 		std::string str;
 		const auto &it = Vertices.find(name);
 		if (it != Vertices.end())
-		{
 			str = vertexToString(*it);
-		}
+
 		return str;
 	}
 
@@ -430,7 +507,7 @@ namespace graph {
 		}
 	}
 
-	inline void Graph::Vertex::addOutEdge(std::unique_ptr<Edge> edge)
+	void Graph::Vertex::addOutEdge(std::unique_ptr<Edge> edge)
 	{
 		if (edge->getSource() == this)
 		{
@@ -438,26 +515,15 @@ namespace graph {
 			auto dest = edge->getDestination();
 			if (dest != nullptr)
 			{
-
 				dest->addInEdgeOnly(edge.get());
-
 				this->addOutEdgeOnly(std::move(edge));
-
-
 			}
-
-
-
-
-
 		}
-
-
 	}
 
 
 
-	inline void Graph::Vertex::removeInEdge(const  Edge * edge)
+	void Graph::Vertex::removeInEdge(const  Edge * edge)
 	{
 
 		if (edge != nullptr)
@@ -467,8 +533,6 @@ namespace graph {
 			auto src = edge->getSource();
 			src->removeOutEdgeOnly(edge);
 		}
-
-
 
 		return;
 	}
@@ -513,14 +577,44 @@ namespace graph {
 		return InEdgeIterator(inEdges.end());
 	}
 
+	Graph::const_InEdgeIterator Graph::Vertex::begin_inEdge() const
+	{
+		return const_InEdgeIterator(inEdges.begin());
+	}
+
+	Graph::const_InEdgeIterator Graph::Vertex::end_inEdge() const
+	{
+		return const_InEdgeIterator(inEdges.end());
+	}
+
+	Graph::const_OutEdgeIterator Graph::Vertex::begin_outEdge() const
+	{
+		return const_OutEdgeIterator(outEdges.begin());
+	}
+
+
+	Graph::const_OutEdgeIterator Graph::Vertex::end_outEdge() const
+	{
+		return const_OutEdgeIterator(outEdges.end());
+	}
 
 	Graph::OutEdgeIterator Graph::Vertex::begin()
 	{
 		return begin_outEdge();
 	}
 
+	Graph::const_OutEdgeIterator Graph::Vertex::begin() const
+	{
+		return begin_outEdge();
+	}
+
 
 	Graph::OutEdgeIterator Graph::Vertex::end()
+	{
+		return end_outEdge();
+	}
+
+	Graph::const_OutEdgeIterator Graph::Vertex::end() const
 	{
 		return end_outEdge();
 	}
@@ -598,6 +692,5 @@ namespace graph {
 			return nullptr;
 
 	}
-
 
 }

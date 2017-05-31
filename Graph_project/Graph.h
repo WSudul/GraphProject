@@ -7,9 +7,10 @@
 #include <iterator>
 #include <memory>
 #include <string>
+#include <unordered_set>
+#include <stack>
 
 
-//#TODO  RETURNING REFERENCES INSTEAD OF POINTERS IN FINDING EDGE ?
 
 /*!
 goals:
@@ -37,6 +38,11 @@ namespace graph {
 		class GraphIterator;
 		class OutEdgeIterator;
 		class InEdgeIterator;
+
+		//forward declaration for const iterators //#TODO implement those correctly!
+		class const_GraphIterator;
+		class const_OutEdgeIterator;
+		class const_InEdgeIterator;
 
 
 		/*!
@@ -138,38 +144,8 @@ namespace graph {
 		*/
 		std::vector<std::string> verticesToString();
 		std::vector<std::string> edgesToString();
-
-
-		/*!
-			returns true whether a traversable path exists from vert1 to vert2
 		
-		*/
-		bool traversable(std::size_t vert1, std::size_t vert2)
-		{
-			auto& v1_it = Vertices.find(vert1);
-			auto& v2_it = Vertices.find(vert2);
-
-			//check if vertices exists at all
-			if (v1_it == Vertices.end() && v2_it == Vertices.end())
-				return false; 
-			
-			//get handles to Vertices
-			auto* v1 = v1_it->second.get();
-			auto* v2 = v2_it->second.get();
-
-			//call DFS method #TODO implement DFS
-			
-			
-
-
-
-		};
-
-		/*!
-			returns true if all 
-		*/
-
-
+	
 		/*!
 			returns iterator to the first element of the OutEdge container
 		*/
@@ -211,18 +187,12 @@ namespace graph {
 
 
 
-			GraphIterator(std::unordered_map<std::size_t,std::unique_ptr<Vertex>>::iterator& pos) :
-				pos_(pos)
-			{};
+			GraphIterator(std::unordered_map<std::size_t, std::unique_ptr<Vertex>>::iterator& pos): pos_(pos){};
 
 			GraphIterator(const GraphIterator& O) :
-				pos_(O.pos_)
-			{};
+				pos_(O.pos_) {};
 
-			virtual ~GraphIterator()
-			{
-				//std::cout << "OutEdgeIterator dtor" << std::endl;
-			};
+			virtual ~GraphIterator(){};
 
 			bool operator==(const GraphIterator& rhs) const { return pos_ == rhs.pos_; }
 			bool operator!=(const GraphIterator& rhs) const { return pos_ != rhs.pos_; }
@@ -258,6 +228,7 @@ namespace graph {
 
 		};
 		
+
 		class OutEdgeIterator
 		{
 		public:
@@ -282,10 +253,7 @@ namespace graph {
 				pos_(O.pos_)
 			{};
 
-			virtual ~OutEdgeIterator()
-			{
-				//std::cout << "OutEdgeIterator dtor" << std::endl;
-			};
+			virtual ~OutEdgeIterator() {};
 
 			bool operator==(const OutEdgeIterator& rhs) const { return pos_ == rhs.pos_; }
 			bool operator!=(const OutEdgeIterator& rhs) const { return pos_ != rhs.pos_; }
@@ -346,10 +314,7 @@ namespace graph {
 				pos_(O.pos_)
 			{};
 
-			virtual ~InEdgeIterator()
-			{
-				//std::cout << "InEdgeIterator dtor" << std::endl;
-			};
+			virtual ~InEdgeIterator() {};
 
 			bool operator==(const InEdgeIterator& rhs) const { return pos_ == rhs.pos_; }
 			bool operator!=(const InEdgeIterator& rhs) const { return pos_ != rhs.pos_; }
@@ -383,8 +348,179 @@ namespace graph {
 		};
 
 		
+		class const_GraphIterator
+		{
+		public:
+
+			using	value_type = const Vertex;
+			using	difference_type = ptrdiff_t;
+			using	pointer = const Vertex*;
+			using	reference = const Vertex&;
+	
+			using	iterator_category = std::bidirectional_iterator_tag;
 
 
+
+			const_GraphIterator(std::unordered_map<std::size_t, std::unique_ptr<Vertex>>::const_iterator& pos) :
+				pos_(pos)
+			{};
+
+			const_GraphIterator(const const_GraphIterator& O) :
+				pos_(O.pos_)
+			{};
+
+			virtual ~const_GraphIterator(){};
+
+			bool operator==(const const_GraphIterator& rhs) const { return pos_ == rhs.pos_; }
+			bool operator!=(const const_GraphIterator& rhs) const { return pos_ != rhs.pos_; }
+
+
+			const_GraphIterator& operator=(const const_GraphIterator& rhs)
+			{
+				this->pos_ = rhs.pos_;
+				return *this;
+			}
+
+
+			//#TODO rework pre/post incr operators
+			const_GraphIterator& operator ++() { ++pos_; return *this; }
+			const_GraphIterator operator++ (int) { /*make assertions*/ const_GraphIterator tmp(*this); ++pos_; return tmp; }
+
+			const_GraphIterator& operator --() { --pos_; return *this; }
+			const_GraphIterator operator-- (int) { /*make assertions*/ const_GraphIterator tmp(*this); --pos_; return tmp; }
+
+			const reference operator*() {
+				return *(pos_->second); //double-dereferencing
+			}
+
+
+			const pointer operator->() {
+				return pos_->second.get();
+			}
+
+
+		private:
+			std::unordered_map<std::size_t, std::unique_ptr<Vertex>>::const_iterator pos_;
+
+
+		};
+
+
+		class const_OutEdgeIterator
+		{
+		public:
+
+			//semi custom iterator which is basically a thin wrap for vector iterator
+			//boiler plate typedefs (using) provided for future expansion with accordance to C++17
+
+			using	value_type = const Edge;
+			using	difference_type = ptrdiff_t;
+			using	pointer = const Edge*;
+			using	reference = const Edge&;
+			using	iterator_category = std::bidirectional_iterator_tag;
+
+
+
+			const_OutEdgeIterator(std::vector<std::unique_ptr<Edge>>::const_iterator& pos) :
+				pos_(pos)
+			{};
+
+			const_OutEdgeIterator(const const_OutEdgeIterator& O) :
+				pos_(O.pos_)
+			{};
+
+			virtual ~const_OutEdgeIterator(){};
+
+			bool operator==(const const_OutEdgeIterator& rhs) const { return pos_ == rhs.pos_; }
+			bool operator!=(const const_OutEdgeIterator& rhs) const { return pos_ != rhs.pos_; }
+			bool operator<=(const const_OutEdgeIterator& rhs) const { return pos_ <= rhs.pos_; }
+			bool operator>=(const const_OutEdgeIterator& rhs) const { return pos_ >= rhs.pos_; }
+			bool operator<(const const_OutEdgeIterator& rhs) const { return pos_ < rhs.pos_; }
+			bool operator>(const const_OutEdgeIterator& rhs) const { return pos_ > rhs.pos_; }
+
+			const_OutEdgeIterator& operator=(const const_OutEdgeIterator& rhs)
+			{
+				this->pos_ = rhs.pos_;
+				return *this;
+			}
+
+
+			//#TODO rework pre/post incr operators
+			const_OutEdgeIterator& operator ++() { ++pos_; return *this; }
+			const_OutEdgeIterator operator++ (int) { /*make assertions*/ const_OutEdgeIterator tmp(*this); ++pos_; return tmp; }
+
+			const_OutEdgeIterator& operator --() { --pos_; return *this; }
+			const_OutEdgeIterator operator-- (int) { /*make assertions*/ const_OutEdgeIterator tmp(*this); --pos_; return tmp; }
+
+			reference operator*() {
+				return **pos_; //double-dereferencing
+			}
+
+
+			pointer operator->() {
+				return pos_->get();
+			}
+
+		private:
+			std::vector<std::unique_ptr<Edge>>::const_iterator pos_;
+		};
+
+
+		class const_InEdgeIterator
+		{
+		public:
+
+			//semi custom iterator which is basically a thin wrap for vector iterator
+			//boiler plate typedefs (using) provided for future expansion with accordance to C++17
+
+			using	value_type = const Edge;
+			using	difference_type = ptrdiff_t;
+			using	pointer = const Edge*;
+			using	reference = const Edge&;
+			using	iterator_category = std::bidirectional_iterator_tag;
+
+
+
+			const_InEdgeIterator(std::vector<Edge*>::const_iterator& pos) :
+				pos_(pos)
+			{};
+
+			const_InEdgeIterator(const const_InEdgeIterator& O) :
+				pos_(O.pos_)
+			{};
+
+			virtual ~const_InEdgeIterator() {};
+
+			bool operator==(const const_InEdgeIterator& rhs) const { return pos_ == rhs.pos_; }
+			bool operator!=(const const_InEdgeIterator& rhs) const { return pos_ != rhs.pos_; }
+			bool operator<=(const const_InEdgeIterator& rhs) const { return pos_ <= rhs.pos_; }
+			bool operator>=(const const_InEdgeIterator& rhs) const { return pos_ >= rhs.pos_; }
+			bool operator<(const const_InEdgeIterator& rhs) const { return pos_ < rhs.pos_; }
+			bool operator>(const const_InEdgeIterator& rhs) const { return pos_ > rhs.pos_; }
+
+			const_InEdgeIterator& operator=(const const_InEdgeIterator& rhs)
+			{
+				this->pos_ = rhs.pos_;
+				return *this;
+			}
+			const_InEdgeIterator& operator ++() { ++pos_; return *this; }
+			const_InEdgeIterator operator++ (int) { /*make assertions*/ const_InEdgeIterator tmp(*this); ++pos_; return tmp; }
+			const_InEdgeIterator& operator --() { --pos_; return *this; }
+			const_InEdgeIterator operator-- (int) { /*make assertions*/ const_InEdgeIterator tmp(*this); --pos_; return tmp; }
+
+
+			reference operator*() {
+				return **pos_; //double-dereferencing
+			}
+
+
+			pointer operator->() {
+				return *pos_;
+			}
+
+		private:
+			std::vector<Edge*>::const_iterator pos_;
+		};
 
 		/*!
 			returns string representation of single vertice
@@ -406,6 +542,45 @@ namespace graph {
 		const Vertex& at(std::size_t k) {
 			return *(Vertices.at(k));
 		}
+
+		/*!
+		returns true whether a traversable path exists from vert1 to vert2
+
+		*/
+		bool traversable(std::size_t vert1, std::size_t vert2)
+		{
+			auto& v1_it = Vertices.find(vert1);
+			auto& v2_it = Vertices.find(vert2);
+
+			//check if vertices exists at all
+			if (v1_it == Vertices.end() && v2_it == Vertices.end())
+				return false;
+
+			//get handles to Vertices
+			auto* v1 = v1_it->second.get();
+			auto* v2 = v2_it->second.get();
+
+			//call DFS method #TODO implement DFS
+
+
+		};
+
+		/*!
+		returns list of nodes that are needed to traverse in order to reach from v1 to v2 as a result of DFS
+		*/
+		std::vector<std::size_t> DFS(const Vertex* v1, const Vertex* v2);
+
+		/*!
+		returns list of nodes that are needed to traverse in order to reach from v1 to v2 as a result of BFS
+		*/
+		std::vector<std::size_t> BFS(const Vertex* v1, const Vertex* v2)
+		{
+
+		}
+
+
+
+
 
 	protected:
 
@@ -600,6 +775,7 @@ namespace graph {
 		*/
 		OutEdgeIterator begin_outEdge();
 
+
 		/*!
 
 			Returns an iterator pointing to the past the last element of outEdges
@@ -607,36 +783,72 @@ namespace graph {
 		OutEdgeIterator end_outEdge();
 
 
+		/*!
+
+		Returns an iterator pointing to the first element of inEdges
+		*/
+		InEdgeIterator begin_inEdge();
+
+
+		/*!
+
+		Returns an iterator pointing to the past the last element of inEdges
+		*/
+		InEdgeIterator end_inEdge();
 
 
 		/*!
 
 			Returns an iterator pointing to the first element of inEdges
 		*/
-		InEdgeIterator begin_inEdge();;
+		const_InEdgeIterator begin_inEdge() const;
+
 
 		/*!
 
 			Returns an iterator pointing to the past the last element of inEdges
 		*/
-		InEdgeIterator end_inEdge();
+		const_InEdgeIterator end_inEdge() const;
+
+		/*!
+
+		Returns an iterator pointing to the first element of outEdges
+		*/
+		const_OutEdgeIterator begin_outEdge() const;
 
 
+		/*!
+
+		Returns an iterator pointing to the past the last element of outEdges
+		*/
+		const_OutEdgeIterator end_outEdge() const;
+
+		
 		/*!
 			Returns an iterator pointing to the first element of edges starting from this Vertex.
 		*/
 		OutEdgeIterator begin();
 
 		/*!
+			Returns an iterator pointing to the first element of edges starting from this Vertex.
+		*/
+		const_OutEdgeIterator begin() const;
+
+
+		/*!
 			Returns an iterator pointing to the past the last element of edges starting from this Vertex.
 		*/
 		OutEdgeIterator end();
 
+
+		/*!
+		Returns an iterator pointing to the past the last element of edges starting from this Vertex.
+		*/
+		const_OutEdgeIterator end() const;
+
 	protected:
 
 		std::size_t uniq_id; //unique ID #TODO enforcing uniquness and reclamation of unused IDs without 
-
-
 
 		std::vector<Edge*> inEdges; //container of all edges that are pointing to this node
 		
@@ -648,6 +860,7 @@ namespace graph {
 		*/
 		void removeOutEdgeOnly(const Edge* edge);
 		
+
 		/*!
 			removes inEdge edge from this Vertex. Removes only pointer from container to the object
 		*/
