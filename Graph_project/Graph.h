@@ -33,6 +33,14 @@ namespace graph {
 		Graph();
 		virtual ~Graph();
 
+		/* forward delcaration of hidden classes representing edges and vertices*/
+	protected:
+
+
+		class Vertex;
+
+		class Edge;
+	public:
 
 		//forward declaration for iterators
 		class GraphIterator;
@@ -156,18 +164,6 @@ namespace graph {
 		*/
 		GraphIterator end();
 
-
-	protected:
-		
-		//#TODO make Vertex/Edge public?
-
-		//forward declarations
-
-		class Vertex;
-
-		class Edge;
-
-	
 	public:
 
 
@@ -566,12 +562,13 @@ namespace graph {
 		};
 
 		/*!
-		returns list of nodes that are needed to traverse in order to reach from v1 to v2 as a result of DFS
+			returns list of nodes that are needed to traverse in order to reach from v1 to v2 as a result of DFS
 		*/
 		std::vector<std::size_t> DFS(const Vertex* v1, const Vertex* v2);
 
+
 		/*!
-		returns list of nodes that are needed to traverse in order to reach from v1 to v2 as a result of BFS
+			returns list of nodes that are needed to traverse in order to reach from v1 to v2 as a result of BFS
 		*/
 		std::vector<std::size_t> BFS(const Vertex* v1, const Vertex* v2)
 		{
@@ -579,6 +576,10 @@ namespace graph {
 		}
 
 
+		/*!
+			overload for DFS taking Vertex ID as argument
+		*/
+		std::vector<std::size_t> DFS(const std::size_t v1, const std::size_t v2);
 
 
 
