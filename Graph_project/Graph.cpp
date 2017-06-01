@@ -320,7 +320,7 @@ namespace graph {
 
 		while (currVertex != v2 && !path.empty()) {
 			
-			for (auto edge : *currVertex) //iterate over const elements
+			for (auto edge : *currVertex) //iterate over const elements //IT WILL LOOP 1,2,3,4,..n times for each Vertex!, otherwise i should store last accessed iterator so it might be costly...
 			{
 				const Vertex* dest = edge.getDestination();
 
@@ -374,7 +374,27 @@ namespace graph {
 		path.push(v2);
 		//path now contains solution-> v1, v_n,...v_m, v2
 		//reverse it and you have v1->v2 (v1->v2 != v2->v1 !!)
+		//or iterate backward from end to begin
+		std::vector<std::size_t> path_vec;
+		path_vec.reserve(path.size());
 
+		while (path.size()){
+			path_vec.push_back(path.top()->getID());
+			path.pop();
+		};
+
+		return path_vec;
+	}
+
+	std::vector<std::size_t> Graph::DFS(const std::size_t v1, const std::size_t v2)
+	{
+		auto v1_it = Vertices.find(v1);
+		auto v2_it = Vertices.find(v2);
+
+		if (v1_it == Vertices.end() && v2_it == Vertices.end()) //check if vertices exist
+			return std::vector<std::size_t>();
+
+		return DFS(v1_it->second.get(), v2_it->second.get());
 	}
 
 	inline std::string Graph::vertexToString(const std::size_t &name)
