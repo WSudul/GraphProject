@@ -267,6 +267,43 @@ TEST(VertexEdgeCountTest, AddVertexWithoutID)
 
 }
 
+TEST(PathFinding, DFS_directed)
+{
+	graph::Graph g;
+	
+	for (std::size_t i = 0; i < 5; ++i)
+		g.addVertex(i);
+
+	for (std::size_t i = 0; i < 5; ++i)
+		g.addEdge(i%5, (i+1)% 5, 1, false);
+
+	for (std::size_t i = 0; i < 5; ++i)
+		g.addEdge(i % 5, (i + 2) % 5, 1, false);
+
+	g.removeDirEdge(3, 4);
+
+	std::vector<std::size_t> test1 = { 0,1,2,4 };
+
+	std::string test1str = "0124"; //temporary for checking result
+	std::vector<std::size_t> res = g.DFS(0, 4);
+	
+	std::string resstr;
+		
+	for (auto it : res)
+		resstr += it;
+
+	EXPECT_EQ(0, res.size());
+
+
+	//#TODO add google mock to project!
+	//EXPECT_THAT(g.DFS(0, 4), ::testing::ContainerEq(test1));
+	//EXPECT_STRCASEEQ(test1str.c_str(), resstr.c_str());
+
+
+
+}
+
+
 int main(int argc, _TCHAR* argv[])
 {
 	 
