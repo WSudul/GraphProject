@@ -769,12 +769,12 @@ namespace graph {
 		/*!
 			removes inedge that belongs to this Vertex'es inEdges and from Vertex that owns the edge itself (the Source Vertex) 
 		*/
-		void removeInEdge(const Edge* edge);
+		void removeInEdge(Edge* edge);
 
 		/*!
 			removes outedge that belongs to this Vertex'es outEdges and from Vertex that was destination of the edge (the Destination Vertex)
 		*/
-		void removeOutEdge( const Edge* edge);
+		void removeOutEdge(Edge* edge);
 
 
 		/*!
@@ -902,11 +902,14 @@ namespace graph {
 		short getCost() const;
 		void setCost(int cost);
 
-		std::size_t getID();
+		const std::size_t getID();
+		const std::size_t getID() const;
 
+		Vertex* getSource();
+		Vertex* getDestination();
 
-		Vertex* getSource() const;
-		Vertex* getDestination() const;
+		const Vertex* getSource() const;
+		const Vertex* getDestination() const;
 
 		bool isDirected() const;
 

@@ -29,17 +29,31 @@ namespace graph {
 		this->cost = cost;
 	}
 
-	std::size_t Graph::Edge::getID()
+	const std::size_t Graph::Edge::getID()
+	{
+		return this->id;
+	}
+	const std::size_t Graph::Edge::getID() const
 	{
 		return this->id;
 	}
 
-	graph::Graph::Vertex * Graph::Edge::getSource() const
+	Graph::Vertex * Graph::Edge::getSource()
 	{
 		return source;
 	}
 
-	graph::Graph::Vertex * Graph::Edge::getDestination() const
+	Graph::Vertex * Graph::Edge::getDestination()
+	{
+		return destination;
+	}
+
+	const graph::Graph::Vertex * Graph::Edge::getSource() const
+	{
+		return source;
+	}
+
+	const graph::Graph::Vertex * Graph::Edge::getDestination() const
 	{
 		return destination;
 	}
@@ -309,27 +323,51 @@ namespace graph {
 		//#TODO assert validity of v1,v2 ->not nullptr , belong to graph (find)
 
 		//assuming a "large" graph #TODO case for small graphs !
-		std::unordered_set<const Vertex*> visited;
-		std::stack<const Vertex*> path;
+		std::unordered_set<const Vertex*> visited; //stores all visited Vertices (identified by pointer address)
+		std::stack<const Vertex*> stack;
 		
 		const Vertex* currVertex =v1;
-		path.push(currVertex);
-		visited.insert(currVertex);
+		stack.push(currVertex); //push starting vertex to stack
+		//visited.insert(currVertex);
 
 		bool found_not_visited = false;
 		
+		/*auto outEdge_it = currVertex->begin_outEdge();
+		auto inEdge_it = currVertex->begin_outEdge();*/
 
-		while (currVertex != v2 && !path.empty()) {
+		while (currVertex != v2 && !stack.empty()) {
+			
+			found_not_visited = false;
+
+			////Refractoring for loop into while loop while keeping iterator value (to avoid needless looping)
+
+			//while (outEdge_it != currVertex->end_outEdge() && !found_not_visited)
+			//{
+			//	const Vertex* dest = outEdge_it->getDestination();
+			//	auto p = visited.insert(dest);
+
+			//	if (p.second) {
+			//		//dest Vertex not present,gets marked as visited
+			//		stack.push(currVertex); //add new node to path
+
+			//		currVertex = dest; //explore new node
+			//		outEdge_it = currVertex->begin(); //change 
+			//		found_not_visited = true;
+			//		break; //break for loop #TODO rework tihs
+			//	};
+			//};
+			
+			
+			
 			
 			for (auto edge : *currVertex) //iterate over const elements //IT WILL LOOP 1,2,3,4,..n times for each Vertex!, otherwise i should store last accessed iterator so it might be costly...
 			{
 				const Vertex* dest = edge.getDestination();
-
 				auto p = visited.insert(dest);
 
 				if (p.second) {
 					//dest Vertex not present,gets marked as visited
-					path.push(currVertex); //add new node to path
+					stack.push(currVertex); //add new node to path
 
 					currVertex = dest; //explore new node
 					found_not_visited = true;
@@ -350,7 +388,7 @@ namespace graph {
 
 						if (p.second) {
 							//dest Vertex not present,gets marked as visited
-							path.push(currVertex); //add new node to path
+							stack.push(currVertex); //add new node to path
 
 							currVertex = source; //explore new node
 							found_not_visited = true;
@@ -363,25 +401,25 @@ namespace graph {
 
 			if (!found_not_visited)
 			{
-				path.pop();
+				stack.pop();
 			}
 
 
 		};
 
-		if (path.empty())
+		if (stack.empty())
 			return std::vector<std::size_t>(); //return empty vector if there was no solution
 
-		path.push(v2);
+		stack.push(v2);
 		//path now contains solution-> v1, v_n,...v_m, v2
 		//reverse it and you have v1->v2 (v1->v2 != v2->v1 !!)
 		//or iterate backward from end to begin
 		std::vector<std::size_t> path_vec;
-		path_vec.reserve(path.size());
+		path_vec.reserve(stack.size());
 
-		while (path.size()){
-			path_vec.push_back(path.top()->getID());
-			path.pop();
+		while (stack.size()){
+			path_vec.push_back(stack.top()->getID());
+			stack.pop();
 		};
 
 		return path_vec;
@@ -544,7 +582,7 @@ namespace graph {
 
 
 
-	void Graph::Vertex::removeInEdge(const  Edge * edge)
+	void Graph::Vertex::removeInEdge( Edge * edge)
 	{
 
 		if (edge != nullptr)
@@ -558,7 +596,7 @@ namespace graph {
 		return;
 	}
 
-	inline void Graph::Vertex::removeOutEdge(const Edge * edge)
+	inline void Graph::Vertex::removeOutEdge(Edge * edge)
 	{
 
 		if (edge != nullptr)
