@@ -558,6 +558,13 @@ namespace graph {
 
 			//call DFS method #TODO implement DFS
 
+			std::vector<std::size_t> pathDFS=DFS(v1, v2);
+
+			if (pathDFS.empty())
+				return false;
+
+			return true;
+
 
 		};
 

@@ -311,8 +311,9 @@ namespace graph {
 		//assuming a "large" graph #TODO case for small graphs !
 		std::unordered_set<const Vertex*> visited;
 		std::stack<const Vertex*> path;
-
+		
 		const Vertex* currVertex =v1;
+		path.push(currVertex);
 		visited.insert(currVertex);
 
 		bool found_not_visited = false;

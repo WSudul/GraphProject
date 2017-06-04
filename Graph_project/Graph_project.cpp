@@ -12,6 +12,7 @@
 #include <fstream>
 #include "DataGraph.h"
 #include "gtest/gtest.h"
+#include "gmock/gmock.h"
 
 //forces busy wait for at least val seconds
 void forceWait(const double val)
@@ -284,19 +285,11 @@ TEST(PathFinding, DFS_directed)
 
 	std::vector<std::size_t> test1 = { 0,1,2,4 };
 
-	std::string test1str = "0124"; //temporary for checking result
-	std::vector<std::size_t> res = g.DFS(0, 4);
+	//#TODO create Test Fixture to avoid manually creating object! 
+	//#TODO review this test (it gets stuck)
+
 	
-	std::string resstr;
-		
-	for (auto it : res)
-		resstr += it;
-
-	EXPECT_EQ(0, res.size());
-
-
-	//#TODO add google mock to project!
-	//EXPECT_THAT(g.DFS(0, 4), ::testing::ContainerEq(test1));
+	EXPECT_THAT(g.DFS(0, 4), ::testing::ContainerEq(test1));
 	//EXPECT_STRCASEEQ(test1str.c_str(), resstr.c_str());
 
 
@@ -399,8 +392,6 @@ int main(int argc, _TCHAR* argv[])
 	//
 	//}
 
-
-	//
 
 	//graph_ptr.reset();
 	
