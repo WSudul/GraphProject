@@ -194,7 +194,7 @@ namespace graph {
 			
 			
 			OutEdgeIterator edge_it = val->begin_outEdge();
-			Vertex* dest;
+			Vertex* dest=nullptr;
 			
 			//iterate over all outEdges and remove edges from Graph
 			//for (auto edge_it = val->begin_outEdge(); edge_it != val->end_outEdge();)
@@ -234,7 +234,7 @@ namespace graph {
 			//for (auto edge_it = val->begin_inEdge(); edge_it != val->end_inEdge();)
 
 			InEdgeIterator edge_it2 = val->begin_inEdge();
-			Vertex* src;
+			Vertex* src= nullptr;
 
 			while (val->begin_inEdge() != val->end_inEdge())
 			{

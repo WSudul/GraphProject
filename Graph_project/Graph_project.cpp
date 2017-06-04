@@ -11,290 +11,14 @@
 #include <chrono>
 #include <fstream>
 #include "DataGraph.h"
+#include "Tests.h"
 #include "gtest/gtest.h"
 #include "gmock/gmock.h"
 
-//forces busy wait for at least val seconds
-void forceWait(const double val)
-{
-	std::chrono::high_resolution_clock::time_point t1 = std::chrono::high_resolution_clock::now();
-	std::chrono::duration<double> time_span;
-	do {
-		std::chrono::high_resolution_clock::time_point t2 = std::chrono::high_resolution_clock::now();
-		time_span = std::chrono::duration_cast<std::chrono::duration<double>>(t2 - t1);
-	} while (time_span.count() <val);
-}
 
 
-std::unique_ptr<graph::Graph> createGraph(unsigned int v, unsigned int e, const unsigned n,const unsigned x)
-{
-	
-	std::unique_ptr<graph::Graph>  G1(new graph::Graph);
-	
-	v *= n;
-	e *= x;
 
-	for (unsigned int i = 0; i < v; i++)
-	{
-		G1->addVertex(i);
-	}
 
-	for (unsigned int i = 0; i < e*v; i++)
-	{
-		G1->addEdge((i * 2) % v, (i + 2) % v, i%v);
-	}
-
-	return std::move(G1);
-	////remove all edges that meet lambda predicament
-	//for (int i = 0; i < e*v; i++)
-	//{
-	//	G1.removeDirEdge(i%v, (i + 1) % v, [](int cost) ->bool {return cost == 100; });
-	//}
-
-
-	////remove half of vertices
-	//for (int i = 0; i < v / 2; i++)
-	//{
-	//	G1.removeVertex(i);
-	//}
-
-	//for (auto& nodes : G1)
-	//{
-	//	std::cout << nodes.getID() << " ";
-	//}
-}
-
-
-//creates n x n grid containing n^2 edges that each is connected by undirected edge to create a grid
-std::unique_ptr<graph::Graph> grid_square(const unsigned int n)
-{
-	std::unique_ptr<graph::Graph> g(new graph::Graph);
-
-
-	for (unsigned i = 0; i < n*n; ++i)
-	{
-			g->addVertex(i);
-	}
-
-	if (n < 2) //simple fix for edge case when there is nothing to connect + avoid overlapping with unsigned counters
-	{
-		return std::move(g);
-	}
-
-
-	for (unsigned i = 0; i < n-1; ++i)
-	{
-		for (unsigned j = 0; j < n -1; ++j)
-		{
-			//first set - going up and right
-			std::size_t pos = i*(n) + j;
-			g->addEdge(pos , pos+1, 1,false);
-
-			g->addEdge(pos , pos+n, 1, false);
-		}
-
-		//top edge going right, i=0 i<n-1
-		g->addEdge(n*(n - 1) + i, n*(n - 1) + 1 + i);
-
-	}
-
-	for(unsigned i=1;i<n;++i)
-	{
-		//right edge going up
-		g->addEdge((i*n - 1), (i*n) + n - 1);
-	}
-	
-	return std::move(g);
-}
-
-
-TEST(VertexEdgeCountTest, OnlyCreation)
-{
-	std::unique_ptr<graph::Graph> g_ptr = grid_square(10);
-	ASSERT_EQ(100, g_ptr->vertexCount());
-	ASSERT_EQ(180, g_ptr->edgeCount());
-
-	g_ptr = grid_square(4);
-	ASSERT_EQ(16, g_ptr->vertexCount());
-	ASSERT_EQ(24, g_ptr->edgeCount());
-
-	
-	g_ptr = grid_square(1);
-	ASSERT_EQ(1, g_ptr->vertexCount());
-	ASSERT_EQ(0, g_ptr->edgeCount());
-
-	g_ptr = grid_square(0);
-	ASSERT_EQ(0, g_ptr->vertexCount());
-	ASSERT_EQ(0, g_ptr->edgeCount());
-
-}
-
-
-TEST(VertexEdgeCountTest, RemovedEdges)
-{
-	std::unique_ptr<graph::Graph> g_ptr = grid_square(10);
-	g_ptr->removeDirEdge(0, 1);
-	ASSERT_EQ(100, g_ptr->vertexCount());
-	ASSERT_EQ(179, g_ptr->edgeCount());
-	
-
-	g_ptr = grid_square(4);
-	g_ptr->removeDirEdge(0, 1);
-	ASSERT_EQ(16, g_ptr->vertexCount());
-	ASSERT_EQ(23, g_ptr->edgeCount());
-
-
-	g_ptr = grid_square(1);
-	g_ptr->removeDirEdge(0, 1); //not existing edge
-	ASSERT_EQ(1, g_ptr->vertexCount());
-	ASSERT_EQ(0, g_ptr->edgeCount());
-
-	g_ptr = grid_square(0);
-	g_ptr->removeDirEdge(0, 1); //not exisitng edge
-	ASSERT_EQ(0, g_ptr->vertexCount());
-	ASSERT_EQ(0, g_ptr->edgeCount());
-
-}
-
-
-TEST(VertexEdgeCountTest, RemovedVertex)
-{
-	std::unique_ptr<graph::Graph> g_ptr = grid_square(10);
-	g_ptr->removeVertex(9);
-	ASSERT_EQ(99, g_ptr->vertexCount());
-	ASSERT_EQ(178, g_ptr->edgeCount());
-
-	g_ptr->removeVertex(1);
-	ASSERT_EQ(98, g_ptr->vertexCount());
-	ASSERT_EQ(175, g_ptr->edgeCount());
-
-	
-	g_ptr = grid_square(4);
-	g_ptr->removeVertex(3);
-	ASSERT_EQ(15, g_ptr->vertexCount());
-	ASSERT_EQ(22, g_ptr->edgeCount());
-	g_ptr->removeVertex(1);
-	ASSERT_EQ(14, g_ptr->vertexCount());
-	ASSERT_EQ(19, g_ptr->edgeCount());
-
-
-	g_ptr = grid_square(1);
-	g_ptr->removeVertex(10); //not exist vertex
-	ASSERT_EQ(1, g_ptr->vertexCount());
-	ASSERT_EQ(0, g_ptr->edgeCount());
-
-	g_ptr->removeVertex(0);
-	ASSERT_EQ(0, g_ptr->vertexCount());
-	ASSERT_EQ(0, g_ptr->edgeCount());
-
-	g_ptr = grid_square(0);
-	g_ptr->removeVertex(0); //not exist vertex
-	ASSERT_EQ(0, g_ptr->vertexCount());
-	ASSERT_EQ(0, g_ptr->edgeCount());
-
-}
-
-TEST(VertexEdgeCountTest, AddVertex)
-{
-	std::unique_ptr<graph::Graph> g_ptr = grid_square(10);
-	g_ptr->addVertex(100);
-	ASSERT_EQ(101, g_ptr->vertexCount());
-	ASSERT_EQ(180, g_ptr->edgeCount());
-
-
-	g_ptr = grid_square(4);
-	g_ptr->addVertex(16);
-	ASSERT_EQ(17, g_ptr->vertexCount());
-	ASSERT_EQ(24, g_ptr->edgeCount());
-
-
-	g_ptr = grid_square(1);
-	g_ptr->addVertex(10);
-	ASSERT_EQ(2, g_ptr->vertexCount());
-	ASSERT_EQ(0, g_ptr->edgeCount());
-
-
-	g_ptr = grid_square(0);
-	g_ptr->addVertex(1);
-	ASSERT_EQ(1, g_ptr->vertexCount());
-	ASSERT_EQ(0, g_ptr->edgeCount());
-
-	//add existing vertex
-	g_ptr = grid_square(3);
-	g_ptr->addVertex(3); 
-	ASSERT_EQ(9, g_ptr->vertexCount());
-	ASSERT_EQ(12, g_ptr->edgeCount());
-
-}
-
-
-TEST(VertexEdgeCountTest, AddVertexWithoutID)
-{
-	std::unique_ptr<graph::Graph> g_ptr = grid_square(10);
-	g_ptr->addVertex();
-	ASSERT_EQ(101, g_ptr->vertexCount());
-	ASSERT_EQ(180, g_ptr->edgeCount());
-
-
-	g_ptr = grid_square(4);
-	g_ptr->addVertex();
-	ASSERT_EQ(17, g_ptr->vertexCount());
-	ASSERT_EQ(24, g_ptr->edgeCount());
-
-
-	g_ptr = grid_square(1);
-	g_ptr->addVertex();
-	ASSERT_EQ(2, g_ptr->vertexCount());
-	ASSERT_EQ(0, g_ptr->edgeCount());
-
-
-	g_ptr = grid_square(0);
-	g_ptr->addVertex();
-	ASSERT_EQ(1, g_ptr->vertexCount());
-	ASSERT_EQ(0, g_ptr->edgeCount());
-
-	//add 2 vertices and then add 1 vertice with already existing ID
-	g_ptr = grid_square(3);
-	g_ptr->addVertex();
-	g_ptr->addVertex();
-	g_ptr->addVertex(0); //already existing ID
-	ASSERT_EQ(11, g_ptr->vertexCount());
-	g_ptr->removeVertex(0); //remove ID
-	ASSERT_EQ(10, g_ptr->vertexCount());
-	g_ptr->addVertex(0); //insert it again
-	ASSERT_EQ(11, g_ptr->vertexCount());
-	
-
-
-}
-
-TEST(PathFinding, DFS_directed)
-{
-	graph::Graph g;
-	
-	for (std::size_t i = 0; i < 5; ++i)
-		g.addVertex(i);
-
-	for (std::size_t i = 0; i < 5; ++i)
-		g.addEdge(i%5, (i+1)% 5, 1, false);
-
-	for (std::size_t i = 0; i < 5; ++i)
-		g.addEdge(i % 5, (i + 2) % 5, 1, false);
-
-	g.removeDirEdge(3, 4);
-
-	std::vector<std::size_t> test1 = { 0,1,2,4 };
-
-	//#TODO create Test Fixture to avoid manually creating object! 
-	//#TODO review this test (it gets stuck)
-
-	
-	EXPECT_THAT(g.DFS(0, 4), ::testing::ContainerEq(test1));
-	//EXPECT_STRCASEEQ(test1str.c_str(), resstr.c_str());
-
-
-
-}
 
 
 int main(int argc, _TCHAR* argv[])
@@ -394,9 +118,27 @@ int main(int argc, _TCHAR* argv[])
 
 
 	//graph_ptr.reset();
+
+
+	graph::Graph g1;
+	std::size_t n = 10;
+	for (std::size_t i = 0; i < n; ++i)
+		g1.addVertex(i);
+
+	for (std::size_t i = 0; i < n; ++i)
+		g1.addEdge(i % n, (i + 1) % 5, 1, false);
+
+
+	if (g1.traversable(0, 6))
+	{
+		std::cout << "true";
+	}
+	else
+		std::cout << "false";
 	
 
 ::testing::InitGoogleTest(&argc, argv);
+
 
 
 
