@@ -314,9 +314,30 @@ namespace graph {
 		return str;
 	}
 
-	/*!
-	returns list of nodes that are needed to traverse in order to reach from v1 to v2 as a result of DFS
-	*/
+	bool Graph::traversable(std::size_t vert1, std::size_t vert2)
+	{
+		auto& v1_it = Vertices.find(vert1);
+		auto& v2_it = Vertices.find(vert2);
+
+		//check if vertices exists at all
+		if (v1_it == Vertices.end() && v2_it == Vertices.end())
+			return false;
+
+		//get handles to Vertices
+		auto* v1 = v1_it->second.get();
+		auto* v2 = v2_it->second.get();
+
+		//call DFS method #TODO implement DFS
+
+		std::vector<std::size_t> pathDFS = DFS(v1, v2);
+
+		if (pathDFS.empty())
+			return false;
+
+		return true;
+
+
+	}
 
 	std::vector<std::size_t> Graph::DFS(const Vertex * v1, const Vertex * v2)
 	{
@@ -328,38 +349,14 @@ namespace graph {
 		std::stack<const Vertex*> stack;
 		
 		const Vertex* currVertex =v1;
-		stack.push(currVertex); //push starting vertex to stack
-		//visited.insert(currVertex);
-
+		//Bstack.push(currVertex); //push starting vertex to stack
+		visited.insert(currVertex);
+		stack.push(currVertex);
 		bool found_not_visited = false;
-		
-		/*auto outEdge_it = currVertex->begin_outEdge();
-		auto inEdge_it = currVertex->begin_outEdge();*/
 
-		while (currVertex != v2 && !stack.empty()) {
+		while (currVertex != v2) {
 			
 			found_not_visited = false;
-
-			////Refractoring for loop into while loop while keeping iterator value (to avoid needless looping)
-
-			//while (outEdge_it != currVertex->end_outEdge() && !found_not_visited)
-			//{
-			//	const Vertex* dest = outEdge_it->getDestination();
-			//	auto p = visited.insert(dest);
-
-			//	if (p.second) {
-			//		//dest Vertex not present,gets marked as visited
-			//		stack.push(currVertex); //add new node to path
-
-			//		currVertex = dest; //explore new node
-			//		outEdge_it = currVertex->begin(); //change 
-			//		found_not_visited = true;
-			//		break; //break for loop #TODO rework tihs
-			//	};
-			//};
-			
-			
-			
 			
 			for (auto edge : *currVertex) //iterate over const elements //IT WILL LOOP 1,2,3,4,..n times for each Vertex!, otherwise i should store last accessed iterator so it might be costly...
 			{
@@ -368,9 +365,10 @@ namespace graph {
 
 				if (p.second) {
 					//dest Vertex not present,gets marked as visited
+					currVertex = dest; //explore new node
 					stack.push(currVertex); //add new node to path
 
-					currVertex = dest; //explore new node
+					
 					found_not_visited = true;
 					break; //break for loop #TODO rework tihs
 				};
@@ -389,9 +387,11 @@ namespace graph {
 
 						if (p.second) {
 							//dest Vertex not present,gets marked as visited
+							currVertex = source; //explore new node
+							
 							stack.push(currVertex); //add new node to path
 
-							currVertex = source; //explore new node
+							
 							found_not_visited = true;
 							break; //break for loop #TODO rework tihs
 						};
@@ -401,17 +401,21 @@ namespace graph {
 			}
 
 			if (!found_not_visited)
-			{
-				stack.pop();
-			}
+				stack.pop(); //pop edge and try with previous node
 
+
+			if (stack.empty())
+				return std::vector<std::size_t>();
+
+			if (!found_not_visited)
+				currVertex = stack.top(); //get top of stack if no new vertex was found
 
 		};
 
 		if (stack.empty())
 			return std::vector<std::size_t>(); //return empty vector if there was no solution
 
-		stack.push(v2);
+		
 		//path now contains solution-> v1, v_n,...v_m, v2
 		//reverse it and you have v1->v2 (v1->v2 != v2->v1 !!)
 		//or iterate backward from end to begin
@@ -422,6 +426,8 @@ namespace graph {
 			path_vec.push_back(stack.top()->getID());
 			stack.pop();
 		};
+
+		std::reverse(path_vec.begin(),path_vec.end());
 
 		return path_vec;
 	}

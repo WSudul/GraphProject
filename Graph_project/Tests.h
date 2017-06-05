@@ -262,53 +262,140 @@ TEST(VertexEdgeCountTest, AddVertexWithoutID)
 
 
 
-//class GraphPathTest : public ::testing::Test {
-//protected:
-//	virtual void SetUp() {
-//		std::size_t n = 5;
-//		//setup g0
-//		//straight line 0->(n-2) (missing link n-2 -> n-1) (eg 0->1->2->3 for n=5 )
-//		//links between i->i+2 ( eg 0->2,1->3, 2->4, 4->0)
-//		for (std::size_t i = 0; i < n; ++i)
-//			g0.addVertex(i);
-//
-//		for (std::size_t i = 0; i < n; ++i)
-//			g0.addEdge(i % n, (i + 1) % n, 1, false);
-//
-//		for (std::size_t i = 0; i < n; ++i)
-//			g0.addEdge(i % n, (i + 2) % n, 1, false);
-//
-//		g0.removeDirEdge((n-2), (n-1));
-//
-//		//setup g1
-//		//straight line directed graph
-//		n = 10;
-//		for (std::size_t i = 0; i < n; ++i)
-//			g1.addVertex(i);
-//
-//		for (std::size_t i = 0; i < n; ++i)
-//			g1.addEdge(i % n, (i + 1) % 5, 1, false);
-//
-//	}
-//
-//	graph::Graph g0;
-//	graph::Graph g1;
-//};
-//
-//TEST_F(GraphPathTest, PathFinding_DFS_directed) {
-//	
-//
-//	std::vector<std::size_t> test1 = { 0,1,2,4 };
-//	EXPECT_THAT(g0.DFS(0, 4), ::testing::ContainerEq(test1));
-//
-//	//find straight path
-//	std::vector<std::size_t> test2 = { 0,1,2,3,4,5,6};
-//	EXPECT_THAT(g1.DFS(0, 6), ::testing::ContainerEq(test1));
-//
-//	//try to find non-existing path
-//	EXPECT_EQ(g1.DFS(6, 0).size(), 0);
-//
-//	EXPECT_FALSE(g1.traversable(6, 0));
-//
-//
-//}
+class GraphPathTest : public ::testing::Test {
+protected:
+	virtual void SetUp() {
+		std::size_t n = 5;
+		//setup g0
+		//straight line 0->(n-2) (missing link n-2 -> n-1) (eg 0->1->2->3 for n=5 )
+		//links between i->i+2 ( eg 0->2,1->3, 2->4, 3->0, 4->1)
+		for (std::size_t i = 0; i < n; ++i)
+			g0.addVertex(i);
+
+		for (std::size_t i = 0; i < n; ++i)
+			g0.addEdge(i % n, (i + 1) % n, 1, true);
+
+		for (std::size_t i = 0; i < n; ++i)
+			g0.addEdge(i % n, (i + 2) % n, 1, true);
+
+		g0.removeDirEdge((n-2), (n-1));
+
+		//setup g1
+		//straight line directed graph
+		n = 10;
+		for (std::size_t i = 0; i < n; ++i)
+			g1.addVertex(i);
+
+		for (std::size_t i = 0; i < n; ++i)
+			g1.addEdge(i % n, (i + 1) % n, 1, true);
+
+		g1.removeDirEdge((n - 2), (n - 1));
+
+
+		//setup g2
+		//straight line creating loop with edge at  (n-1)->0
+		n = 5;
+		for (std::size_t i = 0; i < n; ++i)
+			g2.addVertex(i);
+
+		for (std::size_t i = 0; i < n; ++i)
+			g2.addEdge(i % n, (i + 1) % n, 1, true);
+
+		//setup g3
+		//every vertex is connected to each other but last vertex is not connected to anything (n=4, 0->1,2 , 1->2,0 etc and 3->nothing}
+		n = 4;
+		for (std::size_t i = 0; i < n; ++i)
+			g3.addVertex(i);
+
+		for (std::size_t i = 0; i < n-1; ++i)
+			for(std::size_t j=1;j<n-1;++j)
+				g3.addEdge(i % n, (j+i)% (n-1), 1, true);
+
+		//setup g0u
+		//straight line in undirected graph (like doubly-linked list)
+		n = 5;
+		for (std::size_t i = 0; i < n; ++i)
+			g0u.addVertex(i);
+
+		for (std::size_t i = 0; i < n-1; ++i)
+			g0u.addEdge(i % n, (i + 1) % n, 1, false);
+
+		
+
+
+		//setup g1u
+		//Vertex 0 has connections to 1..n/2 , n/2 has connections to n/2+1..n-1  (n=10 , 0->1..5 , 5->6..9 )
+		n = 10;
+		for (std::size_t i = 0; i < n; ++i)
+			g1u.addVertex(i);
+
+		for (std::size_t i = 0; i < n / 2; ++i)
+			g1u.addEdge(0, i + 1, 1, false);
+
+		for (std::size_t i = (n/2)+1 ; i < n; ++i)
+			g1u.addEdge(n / 2, i, 1, false);
+
+		
+	}
+
+	graph::Graph g0;
+	graph::Graph g1;
+	graph::Graph g2;
+	graph::Graph g3;
+
+	graph::Graph g0u;
+	graph::Graph g1u;
+};
+
+TEST_F(GraphPathTest, PathFinding_DFS_directed) {
+	
+	
+	std::vector<std::size_t> test1 = { 0,1,2,4 };
+	EXPECT_THAT(g0.DFS(0, 4), ::testing::ContainerEq(test1));
+
+	//find straight path
+	std::vector<std::size_t> test2 = { 0,1,2,3,4,5,6};
+	EXPECT_THAT(g1.DFS(0, 6), ::testing::ContainerEq(test2));
+
+	//try to find non-existing path
+	std::vector<std::size_t> test3 = {};
+	EXPECT_THAT(g1.DFS(6,0), ::testing::ContainerEq(test3));
+	EXPECT_FALSE(g1.traversable(6, 0));
+
+	std::vector<std::size_t> test4 = { 2,3,4,0 };
+	EXPECT_THAT(g2.DFS(2, 0), ::testing::ContainerEq(test4));
+
+	std::vector<std::size_t> test5 = {};
+	EXPECT_THAT(g3.DFS(1, 3), ::testing::ContainerEq(test5));
+	EXPECT_FALSE(g3.traversable(0, 3));
+	EXPECT_FALSE(g3.traversable(1, 3));
+	EXPECT_FALSE(g3.traversable(2, 3));
+	EXPECT_FALSE(g3.traversable(3, 0));
+	EXPECT_EQ(g3.at(3).countEdges(), 0);
+
+}
+
+TEST_F(GraphPathTest, PathFinding_DFS_undirected) {
+
+	//traverse "doubly-linked" list
+	std::vector<std::size_t> test1 = { 0,1,2,3,4 };
+	EXPECT_THAT(g0u.DFS(0, 4), ::testing::ContainerEq(test1));
+
+	//traverse "doubly-linked" list from the end
+	std::vector<std::size_t> test2 = { 4,3,2,1,0 };
+	EXPECT_THAT(g0u.DFS(4, 0), ::testing::ContainerEq(test2));
+
+	//traverse "doubly-linked" list from middle to start
+	std::vector<std::size_t> test3 = { 3,2,1,0};
+	EXPECT_THAT(g0u.DFS(3, 0), ::testing::ContainerEq(test3));
+
+	//traverse graph with multiple edges per Vertex from start to last Vertex
+	std::vector<std::size_t> test4 = { 0,5,9 };
+	EXPECT_THAT(g1u.DFS(0, 9), ::testing::ContainerEq(test4));
+
+	//traverse graph with multiple edges per Vertex from low level edge in reverse
+	std::vector<std::size_t> test5 = { 7,5,0,2 };
+	EXPECT_THAT(g1u.DFS(7, 2), ::testing::ContainerEq(test5));
+
+	
+}

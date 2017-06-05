@@ -121,7 +121,7 @@ int main(int argc, _TCHAR* argv[])
 
 
 	graph::Graph g1;
-	std::size_t n = 10;
+	std::size_t n = 5;
 	for (std::size_t i = 0; i < n; ++i)
 		g1.addVertex(i);
 
@@ -129,7 +129,7 @@ int main(int argc, _TCHAR* argv[])
 		g1.addEdge(i % n, (i + 1) % 5, 1, false);
 
 
-	if (g1.traversable(0, 6))
+	if (g1.traversable(0, 4))
 	{
 		std::cout << "true";
 	}
@@ -137,16 +137,16 @@ int main(int argc, _TCHAR* argv[])
 		std::cout << "false";
 	
 
-::testing::InitGoogleTest(&argc, argv);
+	::testing::InitGoogleTest(&argc, argv);
 
 
 
+	RUN_ALL_TESTS();
 
+  
 
-    return RUN_ALL_TESTS();
-
-	getchar();
-	_CrtDumpMemoryLeaks();
-
+	
+	//_CrtDumpMemoryLeaks();
+	return 0;
 }
 

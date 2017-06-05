@@ -543,30 +543,7 @@ namespace graph {
 		returns true whether a traversable path exists from vert1 to vert2
 
 		*/
-		bool traversable(std::size_t vert1, std::size_t vert2)
-		{
-			auto& v1_it = Vertices.find(vert1);
-			auto& v2_it = Vertices.find(vert2);
-
-			//check if vertices exists at all
-			if (v1_it == Vertices.end() && v2_it == Vertices.end())
-				return false;
-
-			//get handles to Vertices
-			auto* v1 = v1_it->second.get();
-			auto* v2 = v2_it->second.get();
-
-			//call DFS method #TODO implement DFS
-
-			std::vector<std::size_t> pathDFS=DFS(v1, v2);
-
-			if (pathDFS.empty())
-				return false;
-
-			return true;
-
-
-		};
+		bool traversable(std::size_t vert1, std::size_t vert2);
 
 		/*!
 			returns list of nodes that are needed to traverse in order to reach from v1 to v2 as a result of DFS
