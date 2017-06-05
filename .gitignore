@@ -243,3 +243,8 @@ ModelManifest.xml
 /Graph_project/maptest.txt
 /Graph_project/maptest_uniq_ptr.txt
 /Graph_project/maptest_sharedptr.txt
+/Debug_old
+/Debug_old
+/Debug_old/Graph_project.exe
+/Graph_project/Debug_old
+/Graph_project/Debug_test/Graph_project.tlog

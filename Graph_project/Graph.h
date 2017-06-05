@@ -774,7 +774,7 @@ namespace graph {
 		/*!
 			removes outedge that belongs to this Vertex'es outEdges and from Vertex that was destination of the edge (the Destination Vertex)
 		*/
-		void removeOutEdge(Edge* edge);
+		void removeOutEdge( Edge* edge);
 
 
 		/*!

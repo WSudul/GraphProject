@@ -2,7 +2,7 @@
 
 #include "Graph.h"
 #include "gtest/gtest.h"
-//#include "gmock/gmock.h"
+#include "gmock/gmock.h"
 
 //forces busy wait for at least val seconds
 void forceWait(const double val)

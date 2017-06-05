@@ -189,7 +189,8 @@ namespace graph {
 			edgePtr = vertexFromPtr->findOutEdge(vertexToPtr);
 			if (edgePtr != nullptr)
 			{
-				it_from->second->removeOutEdge(edgePtr); //remove the edge
+				//#TODO explicit const_cast -> removeOutEdge
+				it_from->second->removeOutEdge(const_cast<Edge*>(edgePtr)); //remove the edge
 			}
 		}
 
@@ -231,7 +232,7 @@ namespace graph {
 				//check if destination is pointing to valid object
 				if (dest != nullptr)
 				{
-					const auto *temp = &*(edge_it);
+					auto *temp = &*(edge_it);
 					//remove  from pointer from destination vertex and then object from source vertex
 					dest->removeInEdge(temp);
 
@@ -259,7 +260,7 @@ namespace graph {
 				
 
 				//optional (?) check if source belongs to this->Vertices
-				auto src_id = src->getID();
+				const auto src_id = src->getID();
 				auto it = Vertices.find(id);
 				if (it == Vertices.end())
 				{
@@ -269,7 +270,7 @@ namespace graph {
 
 				if (src != nullptr)
 				{
-					const auto *temp = &*(edge_it2);
+					auto *temp = &*(edge_it2);
 					//remove outEdge from source vertex and pointer from destiantion vertex (this)
 					src->removeOutEdge(temp);
 
@@ -584,26 +585,27 @@ namespace graph {
 
 	void Graph::Vertex::removeInEdge( Edge * edge)
 	{
-
 		if (edge != nullptr)
 		{
 			removeInEdgeOnly(edge);
 
-			auto src = edge->getSource();
-			src->removeOutEdgeOnly(edge);
+			edge->getSource()->removeOutEdgeOnly(edge);
+			//src->removeOutEdgeOnly(edge);
 		}
 
 		return;
 	}
 
-	inline void Graph::Vertex::removeOutEdge(Edge * edge)
+	inline void Graph::Vertex::removeOutEdge( Edge * edge)
 	{
 
 		if (edge != nullptr)
 		{
-			auto dest = edge->getDestination();
+			//const auto dest = edge->getDestination();
+
+			edge->getDestination()->removeInEdgeOnly(edge);
 			//remove inEdge in destination vertex
-			dest->removeInEdgeOnly(edge);
+			//dest->removeInEdgeOnly(edge);
 
 			//remove the object itself
 			removeOutEdgeOnly(edge);
@@ -678,26 +680,34 @@ namespace graph {
 		return end_outEdge();
 	}
 
-	void Graph::Vertex::removeOutEdgeOnly(const Edge * edge)
+	void Graph::Vertex::removeOutEdgeOnly(const Edge * edge) 
 	{
 
 		//remove-erase idiom behaves wonkly. Exception thrown when edge was NOT in container (reason: probably giving wrong pointer (inEdge pointer)
 
+		
 
-		auto it = (std::find_if(outEdges.begin(), outEdges.end(),
-			[&edge](const std::unique_ptr<Edge>&e)->bool {return edge == e.get(); }));
+		/*auto it = (std::find_if(outEdges.begin(), outEdges.end(),
+			[&non_const_edge](const std::unique_ptr<Edge>&e)->bool {return non_const_edge == e.get(); }));*/
 
 
-		if (it != outEdges.end())
-		{
-			//erase outgoing edge (erase the object itself).
-			outEdges.erase(it);
-		}
+		//erase-remove_if idiom ; removes ALL elements that have same edge (by design it should always be 1 !) #TODO review this in future
+		outEdges.erase(std::remove_if(outEdges.begin(), outEdges.end(), 
+			[&edge](const std::unique_ptr<Edge>&e)->bool {return edge == e.get(); })
+			, outEdges.end());
+
+		//if (it != outEdges.end())
+		//{
+		//	//erase outgoing edge (erase the object itself).
+		//	
+		//	outEdges.erase(it);
+		//}
 
 	}
 
 	void Graph::Vertex::removeInEdgeOnly(const Edge * edge)
 	{
+
 		//remove-erase idiom on vector container
 		inEdges.erase(std::remove(inEdges.begin(), inEdges.end(), edge));
 	}
