@@ -399,3 +399,51 @@ TEST_F(GraphPathTest, PathFinding_DFS_undirected) {
 
 	
 }
+
+TEST_F(GraphPathTest, PathFinding_BFS_directed) {
+
+
+	std::vector<std::size_t> test1 = { 0,1,2,4 };
+	EXPECT_THAT(g0.BFS(0, 4), ::testing::ContainerEq(test1));
+
+	//find straight path
+	std::vector<std::size_t> test2 = { 0,1,2,3,4,5,6 };
+	EXPECT_THAT(g1.BFS(0, 6), ::testing::ContainerEq(test2));
+
+	//try to find non-existing path
+	std::vector<std::size_t> test3 = {};
+	EXPECT_THAT(g1.BFS(6, 0), ::testing::ContainerEq(test3));
+	EXPECT_FALSE(g1.traversable(6, 0));
+
+	std::vector<std::size_t> test4 = { 2,3,4,0 };
+	EXPECT_THAT(g2.BFS(2, 0), ::testing::ContainerEq(test4));
+
+	std::vector<std::size_t> test5 = {};
+	EXPECT_THAT(g3.BFS(1, 3), ::testing::ContainerEq(test5));
+
+}
+
+TEST_F(GraphPathTest, PathFinding_BFS_undirected) {
+
+	//traverse "doubly-linked" list
+	std::vector<std::size_t> test1 = { 0,4 };
+	EXPECT_THAT(g0u.BFS(0, 4), ::testing::ContainerEq(test1));
+
+	//traverse "doubly-linked" list from the end
+	std::vector<std::size_t> test2 = { 4,0 };
+	EXPECT_THAT(g0u.BFS(4, 0), ::testing::ContainerEq(test2));
+
+	//traverse "doubly-linked" list from middle to start
+	std::vector<std::size_t> test3 = { 3,4,0 };
+	EXPECT_THAT(g0u.BFS(3, 0), ::testing::ContainerEq(test3));
+
+	//traverse graph with multiple edges per Vertex from start to last Vertex
+	std::vector<std::size_t> test4 = { 0,5,9 };
+	EXPECT_THAT(g1u.BFS(0, 9), ::testing::ContainerEq(test4));
+
+	//traverse graph with multiple edges per Vertex from low level edge in reverse
+	std::vector<std::size_t> test5 = { 7,5,0,2 };
+	EXPECT_THAT(g1u.BFS(7, 2), ::testing::ContainerEq(test5));
+
+
+}

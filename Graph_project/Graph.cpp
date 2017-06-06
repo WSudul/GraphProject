@@ -412,9 +412,6 @@ namespace graph {
 
 		};
 
-		if (stack.empty())
-			return std::vector<std::size_t>(); //return empty vector if there was no solution
-
 		
 		//path now contains solution-> v1, v_n,...v_m, v2
 		//reverse it and you have v1->v2 (v1->v2 != v2->v1 !!)
@@ -432,6 +429,150 @@ namespace graph {
 		return path_vec;
 	}
 
+	std::vector<std::size_t> Graph::BFS(const Vertex * v1, const Vertex * v2)
+	{
+		//#TODO assert validity of v1,v2 ->not nullptr , belong to graph (find)
+
+		//assuming a "large" graph #TODO case for small graphs !
+		std::unordered_set<const Vertex*> visited; //stores all visited Vertices (identified by pointer address)
+		std::queue<const Vertex*> queue;
+
+		const Vertex* currVertex = v1;
+	
+		visited.insert(currVertex);
+		queue.push(currVertex);
+		bool found_not_visited = false;
+
+
+		while (currVertex != v2) {
+
+			found_not_visited = false;
+
+			for (auto edge : *currVertex) {
+
+				const Vertex* dest = edge.getDestination();
+				auto p = visited.insert(dest);
+
+				if (p.second) {
+					//dest Vertex not present,gets marked as visited
+					currVertex = dest; //explore new node
+					queue.push(currVertex); //add new node to path
+
+
+					found_not_visited = true;
+					//break; BFS does not need to break
+				};
+
+			}
+
+			//loop through inEdges in search of undirected edges!
+
+			for (auto it = currVertex->begin_inEdge(); it != currVertex->end_inEdge(); ++it) {
+				if (!it->isDirected()) {
+					const Vertex* source = it->getSource();
+
+					auto p = visited.insert(source);
+
+					if (p.second) {
+						//dest Vertex not present,gets marked as visited
+						currVertex = source; //explore new node
+
+						queue.push(currVertex); //add new node to path
+
+
+						found_not_visited = true;
+						//break;
+					};
+				}
+
+			}
+
+
+			if (queue.empty())
+				return std::vector<std::size_t>();
+
+			
+			currVertex = queue.front();
+			queue.pop();
+
+
+		}
+			
+		//start back-tracking from v2 to v1 by checking adjacent Vertices and comparing them via visited set
+		const Vertex* backtrackVertex = v2;
+		bool found_visited = false;
+		std::vector<const Vertex*> path_backtrack;
+			
+		path_backtrack.push_back(v2);
+			
+		while (backtrackVertex != v1) {
+			found_visited = false;
+			//loop through inEdges in search of starting vertex
+
+			for (auto it = backtrackVertex->begin_inEdge(); it != backtrackVertex->end_inEdge(); ++it) {
+				if (!it->isDirected()) {
+					const Vertex* source = it->getSource();
+
+					auto p = visited.find(source);
+
+					if (p != visited.end()) {
+						//dest Vertex not present,gets marked as visited
+						backtrackVertex = source; //explore new node
+
+						path_backtrack.push_back(backtrackVertex); //add new node to path
+
+
+						found_visited = true;
+						break;
+					};
+				}
+
+				//search outedges
+				if (!found_visited) {
+					for (auto edge : *backtrackVertex) {
+						const Vertex* dest = edge.getDestination();
+						auto p = visited.find(dest);
+
+						if (p != visited.end()) {
+							//dest Vertex not present,gets marked as visited
+							backtrackVertex = dest; //explore new node
+							path_backtrack.push_back(backtrackVertex); //add new node to path
+
+
+							found_visited = true;
+							break;
+						};
+
+					}
+
+				}
+			}
+			
+
+
+
+		if (!found_visited) {
+			path_backtrack.pop_back(); //get the oldest element of queue and start exploring it
+			backtrackVertex = path_backtrack.back();
+		}
+		};
+
+
+		//prepare vector containing IDs with results
+		std::vector<std::size_t> path_vec;
+		path_vec.reserve(path_backtrack.size());
+
+
+		//fill
+		for (auto it : path_backtrack)
+			path_vec.push_back(it->getID());
+
+		//reverse
+		std::reverse(path_vec.begin(), path_vec.end());
+
+		return path_vec;
+	}
+
 	std::vector<std::size_t> Graph::DFS(const std::size_t v1, const std::size_t v2)
 	{
 		auto v1_it = Vertices.find(v1);
@@ -441,6 +582,17 @@ namespace graph {
 			return std::vector<std::size_t>();
 
 		return DFS(v1_it->second.get(), v2_it->second.get());
+	}
+
+	std::vector<std::size_t> Graph::BFS(const std::size_t v1, const std::size_t v2)
+	{
+		auto v1_it = Vertices.find(v1);
+		auto v2_it = Vertices.find(v2);
+
+		if (v1_it == Vertices.end() && v2_it == Vertices.end()) //check if vertices exist
+			return std::vector<std::size_t>();
+
+		return BFS(v1_it->second.get(), v2_it->second.get());
 	}
 
 	inline std::string Graph::vertexToString(const std::size_t &name)

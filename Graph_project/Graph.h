@@ -9,7 +9,7 @@
 #include <string>
 #include <unordered_set>
 #include <stack>
-
+#include <queue>
 
 
 /*!
@@ -554,16 +554,17 @@ namespace graph {
 		/*!
 			returns list of nodes that are needed to traverse in order to reach from v1 to v2 as a result of BFS
 		*/
-		std::vector<std::size_t> BFS(const Vertex* v1, const Vertex* v2)
-		{
-
-		}
-
+		std::vector<std::size_t> BFS(const Vertex* v1, const Vertex* v2);
 
 		/*!
 			overload for DFS taking Vertex ID as argument
 		*/
 		std::vector<std::size_t> DFS(const std::size_t v1, const std::size_t v2);
+
+		/*!
+		overload for DFS taking Vertex ID as argument
+		*/
+		std::vector<std::size_t> BFS(const std::size_t v1, const std::size_t v2);
 
 
 
