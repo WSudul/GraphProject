@@ -126,7 +126,7 @@ int main(int argc, _TCHAR* argv[])
 		g1.addVertex(i);
 
 	for (std::size_t i = 0; i < n; ++i)
-		g1.addEdge(i % n, (i + 1) % 5, 1, false);
+		g1.addEdge(i % n, (i + 1) % 5, 1, true);
 
 	g1.removeDirEdge(4, 0);
 	
@@ -140,11 +140,11 @@ int main(int argc, _TCHAR* argv[])
 		std::cout << "false";
 	
 
-	::testing::InitGoogleTest(&argc, argv);
+	//::testing::InitGoogleTest(&argc, argv);
 
 
 
-	RUN_ALL_TESTS();
+	//RUN_ALL_TESTS();
 
   
 

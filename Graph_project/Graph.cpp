@@ -449,15 +449,15 @@ namespace graph {
 
 			
 
-			for (auto const  &edge : *currVertex) {
-
-				const Vertex* dest = edge.getDestination();
+			//for (auto const &edge : *currVertex) {
+			for (auto edge = currVertex->begin(); edge != currVertex->end();++edge) {
+				const Vertex* dest =edge->getDestination();
 				auto p = visited.insert(dest);
 
 				if (p.second) {
-					//dest Vertex not present,gets marked as visited
+				//	//dest Vertex not present,gets marked as visited
 					queue.push(dest); //add new node to path
-					//check if added Vertex is solution
+				//	//check if added Vertex is solution
 					if (dest == v2) {
 						found_solution = true;
 						break;
@@ -465,10 +465,10 @@ namespace graph {
 
 				};
 
-			}
+			};
 
 			//loop through inEdges in search of solutuon
-			if(!found_solution){
+			if (!found_solution) {
 				for (auto it = currVertex->begin_inEdge(); it != currVertex->end_inEdge(); ++it) {
 					//loop only through undirected set
 					if (!(it->isDirected())) {
@@ -487,16 +487,17 @@ namespace graph {
 					}
 
 				}
-
-
-				if (queue.empty())
-					return std::vector<std::size_t>();
-
-				//explore new Vertex
-				currVertex = queue.front();
-				queue.pop();
-
 			}
+
+
+			if (queue.empty())
+				return std::vector<std::size_t>();
+
+			//explore new Vertex
+			currVertex = queue.front();
+			queue.pop();
+
+			
 		}
 		//start back-tracking from v2 to v1 by checking adjacent Vertices and comparing them via visited set
 		std::vector<const Vertex*> path_backtrack = backtrack(v2, v1, visited);
