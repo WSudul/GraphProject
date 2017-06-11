@@ -130,6 +130,11 @@ int main(int argc, _TCHAR* argv[])
 
 	g1.removeDirEdge(4, 0);
 	
+	std::vector<std::string> v = g1.verticesToString();
+	std::string str;
+	for (auto &it : v)
+		str += it;
+	std::cout <<str << std::endl;
 
 
 	if (g1.BFS(0, 4).size()>0)
@@ -140,11 +145,11 @@ int main(int argc, _TCHAR* argv[])
 		std::cout << "false";
 	
 
-	//::testing::InitGoogleTest(&argc, argv);
+	::testing::InitGoogleTest(&argc, argv);
 
 
 
-	//RUN_ALL_TESTS();
+	RUN_ALL_TESTS();
 
   
 

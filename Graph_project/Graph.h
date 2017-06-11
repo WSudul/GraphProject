@@ -178,7 +178,6 @@ namespace graph {
 			using	difference_type = ptrdiff_t;
 			using	pointer = Vertex*;
 			using	reference = Vertex&;
-			/*using	const_reference		= const Edge&;*/
 			using	iterator_category = std::bidirectional_iterator_tag;
 
 
@@ -236,7 +235,6 @@ namespace graph {
 			using	difference_type		=  ptrdiff_t;
 			using	pointer				=  Edge*;
 			using	reference			=  Edge& ;
-			/*using	const_reference		=  Edge&;*/
 			using	iterator_category = std::bidirectional_iterator_tag;
 	
 
@@ -833,9 +831,15 @@ namespace graph {
 
 
 		/*!
-		Returns an iterator pointing to the past the last element of edges starting from this Vertex.
+			Returns an iterator pointing to the past the last element of edges starting from this Vertex.
 		*/
 		const_OutEdgeIterator end() const;
+
+
+		/*!
+			Returns string representation of outedges
+		*/
+		virtual std::string edgestToString();
 
 	protected:
 

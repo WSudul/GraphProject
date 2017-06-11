@@ -309,8 +309,8 @@ namespace graph {
 		str += "Name:";
 		str += std::to_string(item->getID());
 		str += "\tEdges total:";
-		str += std::to_string(item->countEdges());
-
+		str += std::to_string(item->countEdges())+" ";
+		str += item->edgestToString();
 		return str;
 	}
 
@@ -358,7 +358,7 @@ namespace graph {
 			
 			found_not_visited = false;
 			
-			for (auto edge : *currVertex) //iterate over const elements //IT WILL LOOP 1,2,3,4,..n times for each Vertex!, otherwise i should store last accessed iterator so it might be costly...
+			for (auto const &edge : *currVertex) 
 			{
 				const Vertex* dest = edge.getDestination();
 				auto p = visited.insert(dest);
@@ -449,23 +449,24 @@ namespace graph {
 
 			
 
-			//for (auto const &edge : *currVertex) {
-			for (auto edge = currVertex->begin(); edge != currVertex->end();++edge) {
-				const Vertex* dest =edge->getDestination();
-				auto p = visited.insert(dest);
+			//for (auto const  &edge : *currVertex){
+			//	const Vertex* dest = edge.getDestination(); //somethings is wrong with getDestination -> getSource() compiles fine
+			//	//const Vertex* dest =edge->getDestination();
+			//	auto p = visited.insert(dest);
+			//	const Vertex* temp = dest;
+			//	if (p.second) {
+			//		//dest Vertex not present,gets marked as visited
+			//		queue.push(std::move(temp));
+			//		
+			//		//check if added Vertex is solution
+			//		if (dest == v2) {
+			//			found_solution = true;
+			//			break;
+			//		}
 
-				if (p.second) {
-				//	//dest Vertex not present,gets marked as visited
-					queue.push(dest); //add new node to path
-				//	//check if added Vertex is solution
-					if (dest == v2) {
-						found_solution = true;
-						break;
-					}
+			//	};
 
-				};
-
-			};
+			//};
 
 			//loop through inEdges in search of solutuon
 			if (!found_solution) {
@@ -837,6 +838,21 @@ namespace graph {
 	Graph::const_OutEdgeIterator Graph::Vertex::end() const
 	{
 		return end_outEdge();
+	}
+
+	std::string Graph::Vertex::edgestToString()
+	{
+		std::string str;
+		const Vertex* s;
+		const Vertex* d;
+		for (auto const &edge : outEdges)
+		{
+			s = edge->getSource();
+			d = edge->getDestination();
+			str += std::to_string(s->getID())+ "-" + std::to_string(d->getID())+"\n";
+		}
+		
+		return str;
 	}
 
 	void Graph::Vertex::removeOutEdgeOnly(const Edge * edge) 
