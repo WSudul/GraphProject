@@ -429,6 +429,7 @@ namespace graph {
 		return path_vec;
 	}
 
+
 	std::vector<std::size_t> Graph::BFS(const Vertex * v1, const Vertex * v2)
 	{
 		//#TODO assert validity of v1,v2 ->not nullptr , belong to graph (find)
@@ -441,121 +442,64 @@ namespace graph {
 	
 		visited.insert(currVertex);
 		queue.push(currVertex);
-		bool found_not_visited = false;
+		bool found_solution = false;
 
 
 		while (currVertex != v2) {
 
-			found_not_visited = false;
+			
 
-			for (auto edge : *currVertex) {
+			for (auto const  &edge : *currVertex) {
 
 				const Vertex* dest = edge.getDestination();
 				auto p = visited.insert(dest);
 
 				if (p.second) {
 					//dest Vertex not present,gets marked as visited
-					currVertex = dest; //explore new node
-					queue.push(currVertex); //add new node to path
+					queue.push(dest); //add new node to path
+					//check if added Vertex is solution
+					if (dest == v2) {
+						found_solution = true;
+						break;
+					}
 
-
-					found_not_visited = true;
-					//break; BFS does not need to break
 				};
 
 			}
 
-			//loop through inEdges in search of undirected edges!
+			//loop through inEdges in search of solutuon
+			if(!found_solution){
+				for (auto it = currVertex->begin_inEdge(); it != currVertex->end_inEdge(); ++it) {
+					//loop only through undirected set
+					if (!(it->isDirected())) {
+						const Vertex* source = it->getSource();
 
-			for (auto it = currVertex->begin_inEdge(); it != currVertex->end_inEdge(); ++it) {
-				if (!it->isDirected()) {
-					const Vertex* source = it->getSource();
+						auto p = visited.insert(source);
 
-					auto p = visited.insert(source);
+						if (p.second) {
+							//source Vertex not present,gets marked as visited
+							queue.push(source); //add new node to path
 
-					if (p.second) {
-						//dest Vertex not present,gets marked as visited
-						currVertex = source; //explore new node
-
-						queue.push(currVertex); //add new node to path
-
-
-						found_not_visited = true;
-						//break;
-					};
-				}
-
-			}
-
-
-			if (queue.empty())
-				return std::vector<std::size_t>();
-
-			
-			currVertex = queue.front();
-			queue.pop();
-
-
-		}
-			
-		//start back-tracking from v2 to v1 by checking adjacent Vertices and comparing them via visited set
-		const Vertex* backtrackVertex = v2;
-		bool found_visited = false;
-		std::vector<const Vertex*> path_backtrack;
-			
-		path_backtrack.push_back(v2);
-			
-		while (backtrackVertex != v1) {
-			found_visited = false;
-			//loop through inEdges in search of starting vertex
-
-			for (auto it = backtrackVertex->begin_inEdge(); it != backtrackVertex->end_inEdge(); ++it) {
-				if (!it->isDirected()) {
-					const Vertex* source = it->getSource();
-
-					auto p = visited.find(source);
-
-					if (p != visited.end()) {
-						//dest Vertex not present,gets marked as visited
-						backtrackVertex = source; //explore new node
-
-						path_backtrack.push_back(backtrackVertex); //add new node to path
-
-
-						found_visited = true;
-						break;
-					};
-				}
-
-				//search outedges
-				if (!found_visited) {
-					for (auto edge : *backtrackVertex) {
-						const Vertex* dest = edge.getDestination();
-						auto p = visited.find(dest);
-
-						if (p != visited.end()) {
-							//dest Vertex not present,gets marked as visited
-							backtrackVertex = dest; //explore new node
-							path_backtrack.push_back(backtrackVertex); //add new node to path
-
-
-							found_visited = true;
-							break;
-						};
-
+							//perform check if the added Vertex is the solution 
+							if (source == v2)
+								break;
+						}
 					}
 
 				}
+
+
+				if (queue.empty())
+					return std::vector<std::size_t>();
+
+				//explore new Vertex
+				currVertex = queue.front();
+				queue.pop();
+
 			}
-			
-
-
-
-		if (!found_visited) {
-			path_backtrack.pop_back(); //get the oldest element of queue and start exploring it
-			backtrackVertex = path_backtrack.back();
 		}
-		};
+		//start back-tracking from v2 to v1 by checking adjacent Vertices and comparing them via visited set
+		std::vector<const Vertex*> path_backtrack = backtrack(v2, v1, visited);
 
 
 		//prepare vector containing IDs with results
@@ -571,6 +515,7 @@ namespace graph {
 		std::reverse(path_vec.begin(), path_vec.end());
 
 		return path_vec;
+
 	}
 
 	std::vector<std::size_t> Graph::DFS(const std::size_t v1, const std::size_t v2)
@@ -593,6 +538,61 @@ namespace graph {
 			return std::vector<std::size_t>();
 
 		return BFS(v1_it->second.get(), v2_it->second.get());
+	}
+
+	std::vector<const Graph::Vertex*> Graph::backtrack(const Vertex * start, const Vertex * target, const std::unordered_set<const Vertex*>& visited)
+	{
+		const Vertex* backtrackVertex = start;
+		bool found_visited = false;
+		std::vector<const Vertex*> path_backtrack;
+
+		path_backtrack.push_back(start);
+
+		while (backtrackVertex != target) {
+			found_visited = false;
+			//loop through inEdges in search of starting vertex
+
+			for (auto it = backtrackVertex->begin_inEdge(); it != backtrackVertex->end_inEdge(); ++it) {
+				if (!it->isDirected()) {
+					const Vertex* source = it->getSource();
+
+					auto p = visited.find(source);
+
+					if (p != visited.end()) {
+						backtrackVertex = source; //explore different node
+						path_backtrack.push_back(backtrackVertex); //add new node to path
+						found_visited = true;
+						break;
+					};
+				}
+			}
+
+
+			//search outedges
+			if (!found_visited) {
+				for (auto edge : *backtrackVertex) {
+					const Vertex* dest = edge.getDestination();
+					auto p = visited.find(dest);
+
+					if (p != visited.end()) {
+						//dest Vertex not present,gets marked as visited
+						backtrackVertex = dest; //explore new node
+						path_backtrack.push_back(backtrackVertex); //add new node to path
+						found_visited = true;
+						break;
+					};
+
+				}
+
+			}
+
+			if (!found_visited) {
+				path_backtrack.pop_back(); //get the oldest element of queue and start exploring it
+				backtrackVertex = path_backtrack.back();
+			}
+		};
+
+		return path_backtrack;
 	}
 
 	inline std::string Graph::vertexToString(const std::size_t &name)

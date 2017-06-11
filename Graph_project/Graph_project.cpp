@@ -122,14 +122,17 @@ int main(int argc, _TCHAR* argv[])
 
 	graph::Graph g1;
 	std::size_t n = 5;
-	for (std::size_t i = 0; i < n; ++i)
+	for(std::size_t i = 0; i < n; ++i)
 		g1.addVertex(i);
 
 	for (std::size_t i = 0; i < n; ++i)
 		g1.addEdge(i % n, (i + 1) % 5, 1, false);
 
+	g1.removeDirEdge(4, 0);
+	
 
-	if (g1.traversable(0, 4))
+
+	if (g1.BFS(0, 4).size()>0)
 	{
 		std::cout << "true";
 	}

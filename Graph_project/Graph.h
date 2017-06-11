@@ -578,7 +578,12 @@ namespace graph {
 			For client's use each Vertex needs to be identified, therefore it's used with unique key value
 		*/
 		std::unordered_map<std::size_t, std::unique_ptr<Vertex>> Vertices;
-		
+
+
+		/*!
+			method used by BFS to backtrack from starting vertex to target vertex by visiting vertices present in unordered set
+		*/
+		std::vector<const Vertex*> backtrack(const Vertex *start, const Vertex *target, const std::unordered_set<const Vertex*> &visited);
 		
 
 	};
